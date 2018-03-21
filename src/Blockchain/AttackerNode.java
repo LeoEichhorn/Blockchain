@@ -1,16 +1,15 @@
 package Blockchain;
 
+import java.util.concurrent.CyclicBarrier;
+
 public class AttackerNode extends Node{
 
-    public AttackerNode(Blocks blocks) {
-        super(blocks);
+    public AttackerNode(Blocks blocks, CyclicBarrier gate) {
+        super(blocks, gate);
     }
     
     @Override
-    public void run(){
-        while(!blocks.stopped()){
-            mine();
-            blocks.addToAttackerChain();
-        }
+    public void handleBlock(){
+        blocks.addToAttackerChain();
     }
 }

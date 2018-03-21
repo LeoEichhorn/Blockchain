@@ -1,16 +1,15 @@
 package Blockchain;
 
+import java.util.concurrent.CyclicBarrier;
+
 public class TrustedNode extends Node{
 
-    public TrustedNode(Blocks blocks) {
-        super(blocks);
+    public TrustedNode(Blocks blocks, CyclicBarrier gate) {
+        super(blocks, gate);
     }
     
     @Override
-    public void run(){
-        while(!blocks.stopped()){
-            mine();
-            blocks.addToTrustedChain();
-        }
+    public void handleBlock(){
+        blocks.addToTrustedChain();
     }
 }

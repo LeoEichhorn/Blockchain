@@ -8,12 +8,15 @@ public class Blocks {
     //number of (un-)successful double spends
     private int success;
     private int failure;
+    //ignore the first couple measures to avoid scheduling bias
+    private int ignore;
     
     public Blocks(){
         this.attacker = 0;
         this.trusted  = 0;
         this.success  = 0;
         this.failure  = 0;
+        this.ignore   = 2;
     }
     
     /*
@@ -24,7 +27,7 @@ public class Blocks {
     */
     public synchronized void addToTrustedChain(){
         if(stopped())
-            return;
+            return;        
         trusted++;
         checkSuccess();
     }
@@ -47,14 +50,24 @@ public class Blocks {
         //Double spend happens if the first block is confirmed 
         //and the attacking chain is longer than the trusted chain
         if(trusted >= Params.CONFIRMATIONS && attacker > trusted){
-            System.out.println("SUCCESS t:"+trusted+" a:"+attacker);
-            success++;
+            if(ignore <= 0){
+                System.out.println((success+failure)+": SUCCESS t:"+trusted+" a:"+attacker);
+                success++;
+            }else{
+                System.out.println("skipping");
+                ignore--;
+            }
             attacker = trusted = 0;
             
         //current attempt will be aborted if attackers are falling too far behind
         }else if(Params.MAX_LEAD < trusted - attacker){  
-            System.out.println("FAILURE t:"+trusted+" a:"+attacker);
-            failure++;
+            if(ignore <= 0){
+                System.out.println((success+failure)+": FAILURE t:"+trusted+" a:"+attacker);
+                failure++;
+            }else{
+                System.out.println("skipping");
+                ignore--;
+            }
             attacker = trusted = 0;
         }
     }
