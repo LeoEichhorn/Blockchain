@@ -54,7 +54,6 @@ public class Blocks {
                 System.out.println((success+failure)+": SUCCESS t:"+trusted+" a:"+attacker);
                 success++;
             }else{
-                System.out.println("skipping");
                 ignore--;
             }
             attacker = trusted = 0;
@@ -65,7 +64,6 @@ public class Blocks {
                 System.out.println((success+failure)+": FAILURE t:"+trusted+" a:"+attacker);
                 failure++;
             }else{
-                System.out.println("skipping");
                 ignore--;
             }
             attacker = trusted = 0;
