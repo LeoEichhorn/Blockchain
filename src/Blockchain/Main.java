@@ -6,7 +6,11 @@ import java.util.concurrent.CyclicBarrier;
 public class Main{
     public static void main(String[] args) throws InterruptedException {  
         try {
-            Params.loadParameters("parameters.txt");
+            if(args != null && args.length > 0 && args[0] != null){
+                Params.loadParameters(args[0]);
+            }else{                                             
+                Params.loadParameters("parameters.txt");
+            }
         } catch (IOException ex) {
             System.err.println("Error loading parameters.");
             System.exit(1);
