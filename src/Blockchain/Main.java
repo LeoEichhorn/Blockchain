@@ -1,15 +1,21 @@
 package Blockchain;
 
+import Blockchain.Parameters.ParametersBuilder;
 import java.io.IOException;
-import java.util.concurrent.CyclicBarrier;
 
 public class Main{
-    public static void main(String[] args) throws InterruptedException {  
+    
+    public static void main(String[] args) {  
+        Parameters p = null;
         try {
             if(args != null && args.length > 0 && args[0] != null){
-                Params.loadParameters(args[0]);
+                p = (new ParametersBuilder())
+                        .loadFromProperty(args[0])
+                        .build();
             }else{                                             
-                Params.loadParameters("parameters.txt");
+                p = (new ParametersBuilder())
+                        .loadFromProperty("parameters.txt")
+                        .build();
             }
         } catch (IOException ex) {
             System.err.println("Error loading parameters.");
@@ -18,30 +24,13 @@ public class Main{
         
         System.out.printf("Attempting %d double spends on a Blockchain with\n"
                 + "mining difficulty %s and %d confirmations.\n"
-                + "Network: %d trusted and %d attacking nodes.\n", 
-                Params.RUNS, ""+Params.DIFFICULTY, Params.CONFIRMATIONS, 
-                Params.NUM_TRUSTED, Params.NUM_ATTACKER);
+                + "Network: %d trusted and %d attacking nodes.\n"
+                + "MaxLead: %d, MaxLength: %d\n", 
+                p.getRuns(), ""+p.getDifficulty(), p.getConfirmations(), 
+                p.getTrustedNodes(), p.getAttackerNodes(), p.getMaxLead(), p.getMaxLength());
                 
-        
-        int num = Params.NUM_ATTACKER+Params.NUM_TRUSTED;
-        Blocks blocks = new Blocks();
-        CyclicBarrier gate = new CyclicBarrier(num);
-        Node[] nodes = new Node[num];
-        
-        for (int i = 0; i < Params.NUM_TRUSTED; i++) {
-            nodes[i] = new TrustedNode(blocks, gate);
-        }
-        for (int i = Params.NUM_TRUSTED; i < num; i++) {
-            nodes[i] = new AttackerNode(blocks, gate);
-        }
-        
-        for (Node n : nodes) {
-            n.start();
-        }
-        for (Node n : nodes) {
-            n.join();
-        }
-        
-        System.out.println("Successful Double Spends: "+blocks.getSuccess());
+        Simulation sim = new Simulation(p);
+        sim.start();
+
     }
 }
