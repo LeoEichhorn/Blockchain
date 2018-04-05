@@ -1,6 +1,7 @@
 package Blockchain;
 
 import Blockchain.Parameters.ParametersBuilder;
+import Blockchain.Peers.*;
 import java.io.IOException;
 
 public class Main{
@@ -29,7 +30,10 @@ public class Main{
                 p.getRuns(), ""+p.getDifficulty(), p.getConfirmations(), 
                 p.getTrustedNodes(), p.getAttackerNodes(), p.getMaxLead(), p.getMaxLength());
                 
-        Simulation sim = new Simulation(p);
+        PeerStrategy trustedStrategy =  new GraphPeerStrategy(p.getTrustedNodes(), 12, 900, 10);
+        PeerStrategy attackerStrategy = new GraphPeerStrategy(p.getAttackerNodes(), 4, 900, 10);
+        
+        DoubleSpendSimulation sim = new DoubleSpendSimulation(p, trustedStrategy, attackerStrategy);
         sim.start();
 
     }

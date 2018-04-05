@@ -1,21 +1,25 @@
-package Blockchain;
+package Blockchain.Peers;
 
+import Blockchain.Node;
+import Blockchain.Util.Util;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class EuclideanPeerFactory extends AbstractPeerFactory{
+public class EuclideanPeerStrategy extends PeerStrategy{
     private int width;
     private int height;
+    private double stdDev;
     private Random rnd;
 
-    public EuclideanPeerFactory(int width, int height) {
+    public EuclideanPeerStrategy(int width, int height, double stdDev) {
         this.width = width;
         this.height = height;
+        this.stdDev = stdDev;
         this.rnd = new Random();
     }
 
     @Override
-    public long createPeers(ArrayList<Node> nodes) {
+    public long connectPeers(ArrayList<Node> nodes) {
         ArrayList<Point> points = new ArrayList<>(nodes.size());
         for(int i = 0; i < nodes.size(); i++){
             points.add(rndPoint());
@@ -33,7 +37,7 @@ public class EuclideanPeerFactory extends AbstractPeerFactory{
     }
     
     private long latency(Point a, Point b) {
-        return (long) Math.sqrt(Math.pow(a.x-b.x, 2)+Math.pow(a.y-b.y, 2));
+        return (long) Util.nextGaussian(rnd, Math.sqrt(Math.pow(a.x-b.x, 2)+Math.pow(a.y-b.y, 2)),stdDev);
     }
     
     private Point rndPoint() {
@@ -49,6 +53,9 @@ public class EuclideanPeerFactory extends AbstractPeerFactory{
             this.x = x;
             this.y = y;
         }
-        
+        @Override
+        public String toString() {
+            return String.format("(%d,%d)", x, y);
+        }
     }
 }

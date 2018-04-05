@@ -1,4 +1,6 @@
-package Blockchain;
+package Blockchain.Peers;
+
+import Blockchain.Node;
 
 public class Peer {
     private final Node node;

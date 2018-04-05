@@ -1,5 +1,8 @@
-package Blockchain;
+package Blockchain.DoubleSpend;
 
+import Blockchain.Network;
+import Blockchain.Parameters;
+import Blockchain.DoubleSpendSimulation;
 import java.util.logging.Level;
 
 public class DoubleSpendManager {
@@ -7,15 +10,22 @@ public class DoubleSpendManager {
     private int trusted;
     //length of attacker fork
     private int attacker;
+    
+    private int trustedOrphans;
+    private int attackerOrphans;
 
     private Parameters p;
-    private Simulation sim;
+    private DoubleSpendSimulation sim;
+    private Network network;
     
-    public DoubleSpendManager(Parameters p, Simulation sim){
+    public DoubleSpendManager(Parameters p, DoubleSpendSimulation sim, Network network){
         this.p = p;
         this.sim = sim;
+        this.network = network;
         this.attacker = 0;
         this.trusted  = 0;
+        this.trustedOrphans = 0;
+        this.attackerOrphans = 0;
     }
     
     /*
@@ -25,8 +35,12 @@ public class DoubleSpendManager {
     * mining at the time all runs have been completed.
     */
     public synchronized void registerTrustedChain(int newChain){
-        if(sim.stopped() || trusted >= newChain)
+        if(network.stopped())
             return;
+        if(trusted >= newChain){
+            trustedOrphans++;
+            return;
+        }
         trusted = newChain;
         if(p.getLogLevel().intValue() <= Level.FINER.intValue())
             System.out.println("Trusted chain: "+trusted);
@@ -34,8 +48,12 @@ public class DoubleSpendManager {
     }
     
     public synchronized void registerAttackerChain(int newChain){
-        if(sim.stopped() || attacker >= newChain)
+        if(network.stopped())
             return;
+        if(attacker >= newChain){
+            attackerOrphans++;
+            return;
+        }
         attacker = newChain;
         if(p.getLogLevel().intValue() <= Level.FINER.intValue())
             System.out.println("Attacker chain: "+attacker);
@@ -51,14 +69,16 @@ public class DoubleSpendManager {
         //and the attacking chain is longer than the trusted chain
         if(trusted >= p.getConfirmations() && attacker > trusted){
             //success
-            sim.report(true, attacker, trusted);
+            sim.report(true, attacker, trusted, attackerOrphans, trustedOrphans);
             attacker = trusted = 0;
+            attackerOrphans = trustedOrphans = 0;
             
         //current attempt will be aborted if attackers are falling too far behind
         }else if(p.getMaxLead() < trusted - attacker || Math.max(attacker, trusted) > p.getMaxLength()){  
             //failure
-            sim.report(false, attacker, trusted);
+            sim.report(false, attacker, trusted, attackerOrphans, trustedOrphans);
             attacker = trusted = 0;
+            attackerOrphans = trustedOrphans = 0;
         }
     }
 }

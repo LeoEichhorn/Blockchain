@@ -1,5 +1,6 @@
 package Blockchain;
 
+import Blockchain.Util.Util;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -28,8 +29,10 @@ public class Parameters {
 
     //Maximum lead by trusted nodes for attackers to stay within epsilon
     private final int maxLead;
+    //Maximum length of Blockchain before declaring attempt as failed
     private final int maxLength;
     
+    //Controls amount of Console output (INFO < FINE < FINER < FINEST)
     private final Level logLevel;
 
     public Parameters(ParametersBuilder b) {
@@ -46,7 +49,7 @@ public class Parameters {
         if (probCatchUpByOne >= 1) {
             maxLead = Integer.MAX_VALUE;
         } else {
-            maxLead = (int) Math.ceil(log(probCatchUpByOne, epsilon));
+            maxLead = (int) Math.ceil(Util.log(probCatchUpByOne, epsilon));
         }
         maxLength = (int) Math.ceil(1 / (epsilon * 100));
     }
@@ -93,10 +96,6 @@ public class Parameters {
     
     public Level getLogLevel() {
         return logLevel;
-    }
-
-    private static double log(double base, double val) {
-        return Math.log(val) / Math.log(base);
     }
 
     public static class ParametersBuilder {
