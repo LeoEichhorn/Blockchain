@@ -72,6 +72,7 @@ public class GraphUtil {
     }
     
     public static ArrayList<LinkedList<EdgeTo>> rndGraph(int n, int edges, long mean, double stdDev) {
+        edges = Math.min((n*(n-1))/2, Math.max(edges, n-1));
         Random rnd = new Random();
         ArrayList<LinkedList<EdgeTo>> adj = new ArrayList<>(n);
         adj.add(new LinkedList<>());
@@ -122,6 +123,12 @@ public class GraphUtil {
         return d;
     }
     
+    /**
+     * Solving All Pairs Shortest Paths for a graph represented by its adjacency list
+     * by calling dijkstra for each node.
+     * @param adj This graph's adjacency List
+     * @return The length of the shortest Paths
+     */
     public static long[][] apsp(ArrayList<LinkedList<EdgeTo>> adj){
         int n = adj.size();
         long[][] d = new long[n][];

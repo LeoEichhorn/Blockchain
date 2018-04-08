@@ -15,6 +15,9 @@ public class Peer {
         return node;
     }
 
+    /**
+     * @return the latency to reach this Node
+     */
     public long getLatency() {
         return latency;
     }  

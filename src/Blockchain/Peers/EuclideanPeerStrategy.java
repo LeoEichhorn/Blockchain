@@ -11,6 +11,14 @@ public class EuclideanPeerStrategy extends PeerStrategy{
     private double stdDev;
     private Random rnd;
 
+    /**
+     * All Nodes are assigned random coordinates in a 2D plane. The latency
+     * between two Nodes is sampled from a normal distribution whose mean is
+     * proportional to the nodes' euclidiean distance with constant standard deviation.
+     * @param width The width of the plane.
+     * @param height The height of the plane
+     * @param stdDev The standard deviation
+     */
     public EuclideanPeerStrategy(int width, int height, double stdDev) {
         this.width = width;
         this.height = height;

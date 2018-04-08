@@ -1,26 +1,44 @@
-package Blockchain;
+package Blockchain.DoubleSpend;
 
-import Blockchain.DoubleSpend.*;
+import Blockchain.Network;
+import Blockchain.Node;
+import Blockchain.Parameters;
+import Blockchain.Peers.AttackerStrategy;
 import Blockchain.Peers.PeerStrategy;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
-public class DoubleSpendSimulation {
+/**
+ * Simulation of a Network of Trusted and Attacking Nodes, where Attacking Nodes
+ * are trying to achive double spends by indroducing malicious transaktions and 
+ * mining on private forks of the Blockchain.
+ */
+public class DSSimulation {
     private Parameters p;
     private Network network;
-    private DoubleSpendManager dsm;
+    private DSManager dsm;
     
+    //Number of (un-)successful Double Spend attempts
     private int success;
     private int failure;
     
+    //Overall mined Blocks and Orphans by trusted and attacker network
     private int aBlocks, tBlocks;
     private int aOrphans, tOrphans;
     
-    public DoubleSpendSimulation(Parameters p, PeerStrategy trustedStrategy, PeerStrategy attackerStrategy) {
+    /**
+     * Creates a new Simulation for Double Spends.
+     * @param p The Parameters of this Simulation
+     * @param trustedPeerStrategy The Strategy of creating the trusted network
+     * @param attackerPeerStrategy The Strategy of creating the attacker network
+     * @param attackerStrategy The Strategy of connecting attacker network with trusted network
+     */
+    public DSSimulation(Parameters p, PeerStrategy trustedPeerStrategy, 
+            PeerStrategy attackerPeerStrategy, AttackerStrategy attackerStrategy) {
         
         this.p = p;
         this.network = new Network(p);
-        this.dsm = new DoubleSpendManager(p, this, network);
+        this.dsm = new DSManager(p, this, network);
         this.success = this.failure = 0;
         
         ArrayList<Node> nodes = new ArrayList<>(p.getNodes());
@@ -34,16 +52,20 @@ public class DoubleSpendSimulation {
             attackers.add(new AttackerNode(dsm, network, p, "Attacker "+(i-p.getTrustedNodes())));
         }
 
-        long maxTrustedLatency = trustedStrategy.connectPeers(nodes);
-        long maxAttackerLatency = attackerStrategy.connectPeers(attackers);
+        long maxTrustedLatency = trustedPeerStrategy.connectPeers(nodes);
+        long maxAttackerLatency = attackerPeerStrategy.connectPeers(attackers);
         long maxLatency = Math.max(maxTrustedLatency, maxAttackerLatency);
-
+        long maxConnLatency = attackerStrategy.connectPeers(attackers, nodes);
+        maxLatency = Math.max(maxLatency, maxConnLatency);
         nodes.addAll(attackers);
         
         network.setNodes(nodes);
         network.setMaxLatency(maxLatency);
     }
     
+    /**
+     * Starts this Simulation.
+     */
     public void start() {
         while(success+failure < p.getRuns()){
             network.run();
@@ -53,6 +75,15 @@ public class DoubleSpendSimulation {
         System.out.println("Attacker Orphan Rate: "+((double)aOrphans)/aBlocks);
     }
     
+    /**
+     * Called after (un-)successful Double Spend attempt. Stops the network so
+     * a new run of the Simulation can be started.
+     * @param successful Wether the Double Spend attempt was successful
+     * @param attackerChain The final length of the attacker fork of the Blockchain
+     * @param trustedChain The final length of the Blockchain created by the Network of trusted Nodes
+     * @param attackerOrphans The number of orphan blocks mined by the attacking Network
+     * @param trustedOrphans The number of orphan blocks mined by the trusted Network
+     */
     public void report(boolean successful, int attackerChain, int trustedChain, 
             int attackerOrphans, int trustedOrphans) {
         
