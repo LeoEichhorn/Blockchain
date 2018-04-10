@@ -54,4 +54,9 @@ public class Blockchain implements Comparable<Blockchain>{
     public int getLength() {
         return length;
     }
+    
+    @Override
+    public String toString() {
+        return String.format("[%d]",length);
+    }
 }

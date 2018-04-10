@@ -27,13 +27,13 @@ public class GraphUtil {
         
     }
     
-    public static ArrayList<LinkedList<EdgeTo>> fromBoolMatrix(boolean[][] b, long mean, double stdDev, boolean symmetric) {
+    public static ArrayList<LinkedList<EdgeTo>> fromBoolMatrix(int[][] b, long mean, double stdDev, boolean symmetric) {
         Random rnd = new Random();
         int n = b.length;
         long[][] m = new long[n][n];
         for(int i = 0; i < n; i++) {
             for(int j = i+1; j < n; j++) {
-                if(b[i][j]){
+                if(b[i][j]>0){
                     long latency = (long) Util.nextGaussian(rnd, mean, stdDev);
                     m[i][j] = latency;
                     if(symmetric){
@@ -41,7 +41,7 @@ public class GraphUtil {
                         continue;
                     }
                 }
-                if(b[j][i]){
+                if(b[j][i]>0){
                     long latency = (long) Util.nextGaussian(rnd, mean, stdDev);
                     m[j][i] = latency;
                     if(symmetric)

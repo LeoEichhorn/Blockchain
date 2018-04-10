@@ -1,4 +1,4 @@
-package Blockchain.DoubleSpend;
+package DoubleSpend;
 
 import Blockchain.Blockchain;
 import Blockchain.Node;

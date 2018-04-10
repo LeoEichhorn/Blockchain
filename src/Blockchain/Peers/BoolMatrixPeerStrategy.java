@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class BoolMatrixPeerStrategy extends GraphPeerStrategy{
-    private boolean[][] m;
+    private int[][] m;
     private boolean symmetric;
     private long meanLatency;
     private double stdDeviation;
@@ -20,7 +20,7 @@ public class BoolMatrixPeerStrategy extends GraphPeerStrategy{
      * @param stdDeviation The standard deviation of the normal distribution
      * @param symmetric Defines if latencies between two nodes should be symmetric
      */
-    public BoolMatrixPeerStrategy(boolean[][] m, boolean symmetric, long meanLatency, double stdDeviation) {
+    public BoolMatrixPeerStrategy(int[][] m, boolean symmetric, long meanLatency, double stdDeviation) {
         this.m = m;
         this.symmetric = symmetric;
         this.meanLatency = meanLatency;
