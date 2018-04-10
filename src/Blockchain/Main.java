@@ -31,11 +31,11 @@ public class Main{
                 p.getRuns(), ""+p.getDifficulty(), p.getConfirmations(), 
                 p.getTrustedNodes(), p.getAttackerNodes(), p.getMaxLead(), p.getMaxLength());
                 
-        PeerStrategy trustedPeerStrategy =  new GraphPeerStrategy(p.getTrustedNodes(), 12, 0, 0);
-        PeerStrategy attackerPeerStrategy = new GraphPeerStrategy(p.getAttackerNodes(), 4, 0, 0);
+        PeerStrategy trustedPeerStrategy =  new RndGraphPeerStrategy(p.getTrustedNodes(), 12, 500, 100);
+        PeerStrategy attackerPeerStrategy = new RndGraphPeerStrategy(p.getAttackerNodes(), 4, 500, 100);
         AttackerStrategy attackerStrategy = new ConstantAttackerStrategy(0, 0);
         
-        DSSimulation sim = new DSSimulation(p, trustedPeerStrategy, attackerPeerStrategy, attackerStrategy);
+        DSSimulation sim = new DSSimulation(p, trustedPeerStrategy, attackerPeerStrategy, attackerStrategy, true);
         sim.start();
 
     }

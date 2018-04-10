@@ -125,6 +125,10 @@ public class Node {
         peers.add(p);
     }
     
+    public void resetPeers() {
+        peers.clear();
+    }
+    
     public String getName() {
         return name;
     }
