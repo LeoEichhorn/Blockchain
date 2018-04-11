@@ -27,7 +27,6 @@ public class Main{
         }
         
         orphanRate(p);
-
     }
     
     public static void doubleSpend(Parameters p){
@@ -65,7 +64,7 @@ public class Main{
      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
     };
     
-    private int[][] star2 = new int[][]
+    private static int[][] star2 = new int[][]
     {{0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0},
      {0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0},
      {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -84,7 +83,7 @@ public class Main{
      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
     };
     
-    private int[][] line = new int[][]
+    private static int[][] line = new int[][]
     {{0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
      {0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0},
      {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -103,7 +102,7 @@ public class Main{
      {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
     };
     
-    private int[][] ring = new int[][]
+    private static int[][] ring = new int[][]
     {{0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
      {0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0},
      {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -127,7 +126,7 @@ public class Main{
                 + "by a Network with mining difficulty %s and %d Nodes.\n",
                 p.getMaxLength(),""+p.getDifficulty(),p.getNodes());
         
-        PeerStrategy ORPeerStrategy = new BoolMatrixPeerStrategy(star1, true, 0, 0);
+        PeerStrategy ORPeerStrategy = new RndGraphPeerStrategy(p.getNodes(), 50, 150, 15);
         ORSimulation sim = new ORSimulation(p, ORPeerStrategy);
         sim.start();
     }

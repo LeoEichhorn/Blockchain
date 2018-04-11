@@ -40,12 +40,16 @@ public class GraphUtil {
                         m[j][i] = latency;
                         continue;
                     }
+                }else{
+                    m[i][j] = -1;
                 }
                 if(b[j][i]>0){
                     long latency = (long) Util.nextGaussian(rnd, mean, stdDev);
                     m[j][i] = latency;
                     if(symmetric)
                         m[i][j] = latency;
+                }else{
+                    m[j][i] = -1;
                 }
             }
         }

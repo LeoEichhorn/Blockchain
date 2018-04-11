@@ -14,14 +14,14 @@ public abstract class GraphPeerStrategy extends PeerStrategy{
     
     protected long connectPeersInGraph(ArrayList<LinkedList<EdgeTo>> adj, ArrayList<Node> nodes) {
         long[][] dist = GraphUtil.apsp(adj);
-        System.out.println("GRAPH:");
-        for(LinkedList<EdgeTo> l : adj){
-            System.out.println(l);
-        }
-        System.out.println("DIST:");
-        for(long[] l : dist){
-            System.out.println(Arrays.toString(l));
-        }
+//        System.out.println("GRAPH:");
+//        for(LinkedList<EdgeTo> l : adj){
+//            System.out.println(l);
+//        }
+//        System.out.println("DIST:");
+//        for(long[] l : dist){
+//            System.out.println(Arrays.toString(l));
+//        }
         long max = 0;
         for(int i = 0; i < nodes.size(); i++){
             for(int j = i+1; j < nodes.size(); j++){
