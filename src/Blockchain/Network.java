@@ -34,7 +34,7 @@ public class Network {
      */
     public void run() {
         stopped = false;
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(5);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(10);
         CyclicBarrier gate = new CyclicBarrier(p.getNodes());
         
         for(Node n : nodes) {
