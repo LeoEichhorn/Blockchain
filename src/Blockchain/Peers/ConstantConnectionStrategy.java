@@ -5,7 +5,7 @@ import Blockchain.Util.Util;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class ConstantAttackerStrategy extends AttackerStrategy{
+public class ConstantConnectionStrategy extends ConnectionStrategy{
     
     private long mean;
     private double stdDev;
@@ -16,7 +16,7 @@ public class ConstantAttackerStrategy extends AttackerStrategy{
      * @param mean The latency mean
      * @param stdDev The latency standard deviation
      */
-    public ConstantAttackerStrategy(long mean, double stdDev) {
+    public ConstantConnectionStrategy(long mean, double stdDev) {
         this.mean = mean;
         this.stdDev = stdDev;
     }

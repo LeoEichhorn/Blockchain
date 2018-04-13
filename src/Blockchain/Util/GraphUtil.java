@@ -2,6 +2,7 @@ package Blockchain.Util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -24,7 +25,6 @@ public class GraphUtil {
                 return false;
             return this.index == ((EdgeTo) obj).index;
         }
-        
     }
     
     public static ArrayList<LinkedList<EdgeTo>> fromBoolMatrix(int[][] b, long mean, double stdDev, boolean symmetric) {
@@ -79,6 +79,8 @@ public class GraphUtil {
         edges = Math.min((n*(n-1))/2, Math.max(edges, n-1));
         Random rnd = new Random();
         ArrayList<LinkedList<EdgeTo>> adj = new ArrayList<>(n);
+        boolean[][] con = new boolean[n][n];
+
         adj.add(new LinkedList<>());
         for(int i = 1; i < n; i++){
             adj.add(new LinkedList<>());
@@ -86,22 +88,39 @@ public class GraphUtil {
             long latency = (long) Util.nextGaussian(rnd, mean, stdDev);
             adj.get(index).add(new EdgeTo(i, latency));
             adj.get(i).add(new EdgeTo(index, latency));
+            con[i][index] = con[index][i] = true;
         }
         edges -= (n-1);
-        while(edges --> 0){
-            int x;
-            do {
-                x = rnd.nextInt(n);
-            }while(adj.get(x).size() == n-1);
-            int y;
-            do {
-                y = rnd.nextInt(n);
-            }while(x == y || adj.get(y).size() == n-1 || adj.get(y).contains(new EdgeTo(x, 0)));
+        
+        RndIntSet set = new RndIntSet(n);
+        for (int i = 0; i < n; i++) {
+            if(adj.get(i).size() < n-1)
+                set.add(i);
+        }
+        
+        while(edges-- > 0){
+            int x = set.removeRandom(rnd);
+            int y = getFreeNeighbor(x, rnd, con, set);
+            
             long latency = (long) Util.nextGaussian(rnd, mean, stdDev);
             adj.get(x).add(new EdgeTo(y, latency));
             adj.get(y).add(new EdgeTo(x, latency));
+            con[x][y] = con[x][y] = true;
+            if(adj.get(x).size() < n-1)
+                set.add(x);
+            if(adj.get(y).size() < n-1)
+                set.add(y);
         }
         return adj;
+    }
+    
+    private static int getFreeNeighbor(int x, Random rnd, boolean[][] con, RndIntSet set){
+        int y = set.removeRandom(rnd);
+        if(!con[x][y]&&!con[y][x])
+            return y;
+        int yn = getFreeNeighbor(x, rnd, con, set);
+        set.add(y);
+        return yn;
     }
     
     public static long[] dijkstra(ArrayList<LinkedList<EdgeTo>> adj, int start){

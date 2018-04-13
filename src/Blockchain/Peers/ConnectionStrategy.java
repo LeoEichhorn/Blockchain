@@ -6,7 +6,7 @@ import java.util.ArrayList;
 /**
  * Strategy of connecting Attacker Network with the Trusted Network.
  */
-public abstract class AttackerStrategy {
+public abstract class ConnectionStrategy {
 
     /**
      * Connects the Attacker Network with the Trusted Network according to the concrete implementation.

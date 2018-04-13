@@ -58,7 +58,7 @@ public class Network {
     }
     
     public void setMaxLatency(long maxLatency) {
-        this.maxLatency = maxLatency;
+        this.maxLatency = Math.max(maxLatency, 200);
     }
     
     public void stop() {

@@ -3,8 +3,10 @@ package DoubleSpend;
 import Blockchain.Network;
 import Blockchain.Node;
 import Blockchain.Parameters;
-import Blockchain.Peers.AttackerStrategy;
+import Blockchain.Peers.ConnectionStrategy;
+import Blockchain.Peers.ConstantConnectionStrategy;
 import Blockchain.Peers.PeerStrategy;
+import Blockchain.Peers.RndGraphPeerStrategy;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -28,13 +30,22 @@ public class DSSimulation {
     
     private PeerStrategy trustedPeerStrategy;
     private PeerStrategy attackerPeerStrategy;
-    private AttackerStrategy attackerStrategy;
+    private ConnectionStrategy attackerStrategy;
     
     private ArrayList<Node> trustedNodes;
     private ArrayList<Node> attackerNodes;
     private ArrayList<Node> nodes;
     
     private boolean resetPeers;
+    
+    public DSSimulation(Parameters p, boolean resetPeers) {
+        this(p,
+            new RndGraphPeerStrategy(p.getTrustedNodes(), p.getTrustedEdges(), p.getTrustedLatency(), 0.1*p.getTrustedLatency()),
+            new RndGraphPeerStrategy(p.getAttackerNodes(), p.getAttackerEdges(), p.getAttackerLatency(), 0.1*p.getAttackerLatency()),
+            new ConstantConnectionStrategy(p.getConnectionLatency(), 0.1*p.getConnectionLatency()),
+            resetPeers
+        );
+    }
     
     /**
      * Creates a new Simulation for Double Spends.
@@ -45,7 +56,7 @@ public class DSSimulation {
      * @param resetPeers True if Peer network should be reset after each run
      */
     public DSSimulation(Parameters p, PeerStrategy trustedPeerStrategy, 
-            PeerStrategy attackerPeerStrategy, AttackerStrategy attackerStrategy, boolean resetPeers) {
+            PeerStrategy attackerPeerStrategy, ConnectionStrategy attackerStrategy, boolean resetPeers) {
         
         this.p = p;
         this.network = new Network(p);

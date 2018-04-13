@@ -37,22 +37,7 @@ public class Main{
                 p.getRuns(), ""+p.getDifficulty(), p.getConfirmations(), 
                 p.getTrustedNodes(), p.getAttackerNodes(), p.getMaxLead(), p.getMaxLength());
         
-        double tGraphDensity = 0.8;
-        double aGraphDensity = 0.8;
-        int tLat = 10;
-        int aLat = 10;
-        int cLat = 10;
-        
-        int nt = p.getTrustedNodes();
-        int na = p.getAttackerNodes();
-        int et = (int) (tGraphDensity*nt*(nt-1))/2;
-        int ea = (int) (aGraphDensity*na*(na-1))/2;
-        
-        PeerStrategy trustedPeerStrategy =  new RndGraphPeerStrategy(p.getTrustedNodes(), et, tLat, 0.1*tLat);
-        PeerStrategy attackerPeerStrategy = new RndGraphPeerStrategy(p.getAttackerNodes(), ea, aLat, 0.1*aLat);
-        AttackerStrategy attackerStrategy = new ConstantAttackerStrategy(cLat, 0.1*cLat);
-        
-        DSSimulation sim = new DSSimulation(p, trustedPeerStrategy, attackerPeerStrategy, attackerStrategy, true);
+        DSSimulation sim = new DSSimulation(p, true);
         sim.start();
     }
 

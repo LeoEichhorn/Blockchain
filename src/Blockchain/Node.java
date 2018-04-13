@@ -1,6 +1,7 @@
 package Blockchain;
 
 import Blockchain.Peers.Peer;
+import Blockchain.Util.CyclicBarrierUtil;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
@@ -53,9 +54,7 @@ public class Node {
                 }
                 synchronize(gate);
             }
-            if (!gate.isBroken()) {
-                gate.reset();
-            }
+            CyclicBarrierUtil.breakCyclicBarrier(gate);
         }, name);
     }
     
