@@ -1,34 +1,37 @@
 package Blockchain.Peers;
 
 import Blockchain.Node;
+import Blockchain.Parameters.DoubleParameter;
+import Blockchain.Parameters.IntParameter;
 import Blockchain.Util.GraphUtil;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class RndGraphPeerStrategy extends GraphPeerStrategy{
     private int n;
-    private int edges;
-    private long meanLatency;
-    private double stdDeviation;
+    private DoubleParameter density;
+    private IntParameter mean;
+    private double deviationFactor;
     
     /**
      * Creates a random network of peers. Latencies are sampled from a 
      * normal distribution with constant mean and standard deviation.
      * @param n The number of Nodes
-     * @param edges The number of Edges
-     * @param meanLatency The mean of the normal distribution
-     * @param stdDeviation The standard deviation of the normal distribution
+     * @param density
+     * @param mean
+     * @param deviationFactor
      */
-    public RndGraphPeerStrategy(int n, int edges, long meanLatency, double stdDeviation) {
+    public RndGraphPeerStrategy(int n, DoubleParameter density, IntParameter mean, double deviationFactor) {
         this.n = n;
-        this.edges = edges;
-        this.meanLatency = meanLatency;
-        this.stdDeviation = stdDeviation;
+        this.density = density;
+        this.mean = mean;
+        this.deviationFactor = deviationFactor;
     }
     
     @Override
     public long connectPeers(ArrayList<Node> nodes) {
-        ArrayList<LinkedList<GraphUtil.EdgeTo>> adj = GraphUtil.rndGraph(n, edges, meanLatency, stdDeviation);
+        int edges = (int) (density.getValue()*n*(n-1))/2;
+        ArrayList<LinkedList<GraphUtil.EdgeTo>> adj = GraphUtil.rndGraph(n, edges, mean.getValue(), deviationFactor*mean.getValue());
         return connectPeersInGraph(adj, nodes);
     }
 

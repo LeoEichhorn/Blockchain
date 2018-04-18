@@ -40,9 +40,9 @@ public class DSSimulation {
     
     public DSSimulation(Parameters p, boolean resetPeers) {
         this(p,
-            new RndGraphPeerStrategy(p.getTrustedNodes(), p.getTrustedEdges(), p.getTrustedLatency(), 0.1*p.getTrustedLatency()),
-            new RndGraphPeerStrategy(p.getAttackerNodes(), p.getAttackerEdges(), p.getAttackerLatency(), 0.1*p.getAttackerLatency()),
-            new ConstantConnectionStrategy(p.getConnectionLatency(), 0.1*p.getConnectionLatency()),
+            new RndGraphPeerStrategy(p.getTrustedNodes(), p.getTrustedGraphDensityParameter(), p.getTrustedLatencyParameter(), 0.1),
+            new RndGraphPeerStrategy(p.getAttackerNodes(), p.getAttackerGraphDensityParameter(), p.getAttackerLatencyParameter(), 0.1),
+            new ConstantConnectionStrategy(p.getConnectionLatencyParameter(), 0.1),
             resetPeers
         );
     }
@@ -102,6 +102,7 @@ public class DSSimulation {
      */  
     public void start() {
         while(success+failure < p.getRuns()){
+            p.next();
             if(success+failure == 0 || resetPeers)
                 createPeers();
             network.run();

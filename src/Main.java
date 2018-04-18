@@ -1,6 +1,6 @@
-
-
 import Blockchain.Parameters;
+import Blockchain.Parameters.DoubleParameter;
+import Blockchain.Parameters.IntParameter;
 import DoubleSpend.DSSimulation;
 import Blockchain.Parameters.ParametersBuilder;
 import Blockchain.Peers.*;
@@ -32,11 +32,10 @@ public class Main {
         System.out.printf("Attempting %d double spends on a Blockchain with\n"
                 + "mining difficulty %s and %d confirmations.\n"
                 + "Network: %d trusted and %d attacking nodes.\n"
-                + "%d trusted and %d attacking edges.\n"
                 + "MaxLead: %d, MaxLength: %d\n",
                 p.getRuns(), "" + p.getDifficulty(), p.getConfirmations(),
-                p.getTrustedNodes(), p.getAttackerNodes(), p.getTrustedEdges(),
-                p.getAttackerEdges(), p.getMaxLead(), p.getMaxLength());
+                p.getTrustedNodes(), p.getAttackerNodes(),
+                p.getMaxLead(), p.getMaxLength());
 
         DSSimulation sim = new DSSimulation(p, true);
         sim.start();
@@ -119,7 +118,7 @@ public class Main {
                 + "by a Network with mining difficulty %s and %d Nodes.\n",
                 p.getMaxLength(), "" + p.getDifficulty(), p.getNodes());
 
-        PeerStrategy ORPeerStrategy = new RndGraphPeerStrategy(p.getNodes(), 50, 150, 15);
+        PeerStrategy ORPeerStrategy = new RndGraphPeerStrategy(p.getNodes(), new DoubleParameter(0.5), new IntParameter(150), 15);
         ORSimulation sim = new ORSimulation(p, ORPeerStrategy);
         sim.start();
     }

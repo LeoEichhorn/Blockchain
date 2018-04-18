@@ -1,24 +1,25 @@
 package Blockchain.Peers;
 
 import Blockchain.Node;
+import Blockchain.Parameters.IntParameter;
 import Blockchain.Util.Util;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class ConstantConnectionStrategy extends ConnectionStrategy{
     
-    private long mean;
-    private double stdDev;
+    private IntParameter mean;
+    private double deviationFactor;
     
     /**
      * Each attacker node is connected with each trusted node by a latency 
      * sampled from a normal distribution with constant mean and standard deviation
-     * @param mean The latency mean
-     * @param stdDev The latency standard deviation
+     * @param mean
+     * @param deviationFactor
      */
-    public ConstantConnectionStrategy(long mean, double stdDev) {
+    public ConstantConnectionStrategy(IntParameter mean, double deviationFactor) {
         this.mean = mean;
-        this.stdDev = stdDev;
+        this.deviationFactor = deviationFactor;
     }
 
     @Override
@@ -27,7 +28,7 @@ public class ConstantConnectionStrategy extends ConnectionStrategy{
         long max = 0;
         for(Node a : attackers) {
             for(Node t : trusted) {
-                long latency = (long) Util.nextGaussian(rnd, mean, stdDev);
+                long latency = (long) Util.nextGaussian(rnd, mean.getValue(), deviationFactor*mean.getValue());
                 max = Math.max(max, latency);
                 a.addPeer(new Peer(t, latency));
                 t.addPeer(new Peer(a, latency));
