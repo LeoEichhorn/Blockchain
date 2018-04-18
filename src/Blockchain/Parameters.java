@@ -25,7 +25,7 @@ public class Parameters {
     //Latency in milliseconds between a trusted and an attacking Node
     private final int connectionLatency;
     
-    //Graph density [0,1] which results to the number of edges in the trusted/attacking network
+    //Graph density [2/n,1] which results to the number of edges in the trusted/attacking network
     private final double trustedGraphDensity;
     private final double attackerGraphDensity;
     private final int trustedEdges;
@@ -101,6 +101,14 @@ public class Parameters {
 
     public int getConnectionLatency() {
         return connectionLatency;
+    }
+    
+    public double getTrustedGraphDensity() {
+        return trustedGraphDensity;
+    }
+    
+    public double getAttackerGraphDensity() {
+        return attackerGraphDensity;
     }
 
     public int getTrustedEdges() {
