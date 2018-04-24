@@ -1,0 +1,2 @@
+f(r,c,d,L_{c},L_{t},L_{a},D_{t},D_{a})=\\
+100 \cdot exp\left( \left(c + 4\right) \cdot \left(L_{c} + 290\right) \cdot \left(0.0036 \cdot \left(r - 50000 \cdot \left(d + 0.00001\right) \cdot log\left(\frac{L_{a} +300}{L_{t} + 300}\right) - d \cdot \left(L_{a} + 7 \cdot L_{t}\right) - log\left(\frac{D_{t} + 20}{D_{a} + 20}\right)\right) - 0.0018\right)\right)
