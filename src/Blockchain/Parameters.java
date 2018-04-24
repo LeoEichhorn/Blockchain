@@ -176,7 +176,7 @@ public class Parameters {
             randomized = false;
         }
         
-        public void setValue(int value){
+        private void setValue(int value){
             randomized = false;
             this.value = value;
         }
@@ -185,7 +185,7 @@ public class Parameters {
             return value;
         }
         
-        public void randomize(int upper, int lower){
+        private void randomize(int upper, int lower){
             randomized = true;
             this.rng = new Random();
             this.upper = upper;
@@ -211,7 +211,7 @@ public class Parameters {
             randomized = false;
         }
         
-        public void setValue(double value){
+        private void setValue(double value){
             randomized = false;
             this.value = value;
         }
@@ -220,7 +220,7 @@ public class Parameters {
             return value;
         }
         
-        public void randomize(double upper, double lower){
+        private void randomize(double upper, double lower){
             randomized = true;
             this.rng = new Random();
             this.upper = upper;

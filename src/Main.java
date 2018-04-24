@@ -118,7 +118,7 @@ public class Main {
                 + "by a Network with mining difficulty %s and %d Nodes.\n",
                 p.getMaxLength(), "" + p.getDifficulty(), p.getNodes());
 
-        PeerStrategy ORPeerStrategy = new RndGraphPeerStrategy(p.getNodes(), new DoubleParameter(0.5), new IntParameter(150), 15);
+        PeerStrategy ORPeerStrategy = new RndGraphPeerStrategy(p.getNodes(), new DoubleParameter(0.7), new IntParameter(50), 0.1);
         ORSimulation sim = new ORSimulation(p, ORPeerStrategy);
         sim.start();
     }
