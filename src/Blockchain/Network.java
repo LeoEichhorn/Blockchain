@@ -10,9 +10,9 @@ import java.util.concurrent.TimeUnit;
  * Controls execution of Nodes in the Network and their synchronization.
  */
 public class Network {
-    private Parameters p;
+    private int nodeCount;
     
-    //All nodes in the network
+    //All nodes in the Network
     private ArrayList<Node> nodes;
     
     //Maximum latency between any two peers
@@ -21,21 +21,22 @@ public class Network {
     //Network status
     private volatile boolean stopped;
     
-    public Network(Parameters p){
-        this.p = p;
+    public Network(int nodeCount){
+        this.nodeCount = nodeCount;
         this.stopped = true;
         this.nodes = new ArrayList<>();
         this.maxLatency = 5000;
     }
     
     /**
-     * All nodes in the network are reset and start to mine on a new blockchain.
-     * Calling thread is blocked until network is stopped.
+     * Maximum latency and Nodes in the Network should be set first.
+     * All Nodes in the Network are reset and start to mine on a new Blockchain.
+     * Calling thread is blocked until Network is stopped.
      */
     public void run() {
         stopped = false;
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(10);
-        CyclicBarrier gate = new CyclicBarrier(p.getNodes());
+        CyclicBarrier gate = new CyclicBarrier(nodeCount);
         
         for(Node n : nodes) {
             n.reset(gate, executor);
@@ -61,6 +62,10 @@ public class Network {
         this.maxLatency = Math.max(maxLatency, 200);
     }
     
+    /**
+     * Stops this Network's execution.
+     * Calling thread of run() will return after Network is stopped.
+     */
     public void stop() {
         this.stopped = true;
     }

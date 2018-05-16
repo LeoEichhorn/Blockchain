@@ -1,4 +1,4 @@
-package Blockchain.Peers;
+package DoubleSpend;
 
 import Blockchain.Node;
 import java.util.ArrayList;

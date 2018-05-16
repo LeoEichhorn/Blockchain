@@ -9,18 +9,18 @@ import Blockchain.Node;
 public class DSBlockchain extends Blockchain{
     private boolean infested;
     
-    public DSBlockchain(boolean infested) {
-        this(0, infested);
+    public DSBlockchain(double difficulty, boolean infested) {
+        this(0, difficulty, infested);
     }
     
-    public DSBlockchain(int length, boolean infested) {
-        super(length);
+    public DSBlockchain(int length, double difficulty, boolean infested) {
+        super(length, difficulty);
         this.infested = infested;
     }
     
     @Override
     public DSBlockchain copy() {
-        return new DSBlockchain(length, infested);
+        return new DSBlockchain(length, difficulty, infested);
     }
     
     @Override

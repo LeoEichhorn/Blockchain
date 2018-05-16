@@ -2,9 +2,6 @@ package DoubleSpend;
 
 import Blockchain.Network;
 import Blockchain.Node;
-import Blockchain.Parameters;
-import Blockchain.Peers.ConnectionStrategy;
-import Blockchain.Peers.ConstantConnectionStrategy;
 import Blockchain.Peers.PeerStrategy;
 import Blockchain.Peers.RndGraphPeerStrategy;
 import java.util.ArrayList;
@@ -21,12 +18,12 @@ public class DSSimulation {
     private DSManager dsm;
     
     //Number of (un-)successful Double Spend attempts
-    private int success;
-    private int failure;
+    private volatile int success;
+    private volatile int failure;
     
     //Overall mined Blocks and Orphans by trusted and attacker network
-    private int aBlocks, tBlocks;
-    private int aOrphans, tOrphans;
+    private volatile int aBlocks, tBlocks;
+    private volatile int aOrphans, tOrphans;
     
     private PeerStrategy trustedPeerStrategy;
     private PeerStrategy attackerPeerStrategy;
@@ -48,18 +45,18 @@ public class DSSimulation {
     }
     
     /**
-     * Creates a new Simulation for Double Spends.
+     * Creates a new Simulation for double spends.
      * @param p The Parameters of this Simulation
-     * @param trustedPeerStrategy The Strategy of creating the trusted network
-     * @param attackerPeerStrategy The Strategy of creating the attacker network
-     * @param attackerStrategy The Strategy of connecting attacker network with trusted network
-     * @param resetPeers True if Peer network should be reset after each run
+     * @param trustedPeerStrategy The PeerStrategy of creating the trusted network
+     * @param attackerPeerStrategy The PeerStrategy of creating the attacker network
+     * @param attackerStrategy The Strategy of connecting the attacker network with the trusted network
+     * @param resetPeers True - Peer network should be reset after each run
      */
     public DSSimulation(Parameters p, PeerStrategy trustedPeerStrategy, 
             PeerStrategy attackerPeerStrategy, ConnectionStrategy attackerStrategy, boolean resetPeers) {
         
         this.p = p;
-        this.network = new Network(p);
+        this.network = new Network(p.getNodes());
         this.dsm = new DSManager(p, this, network);
         this.success = this.failure = 0;
         

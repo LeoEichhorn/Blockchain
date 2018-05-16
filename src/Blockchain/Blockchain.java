@@ -5,31 +5,34 @@ package Blockchain;
  */
 public class Blockchain implements Comparable<Blockchain>{
     protected int length;
-    
+    protected final double difficulty;
     /**
      * Creates a new Blockchain of length zero.
+     * @param difficulty The difficulty to add a Block to this Blockchain
      */
-    public Blockchain() {
-        this(0);
+    public Blockchain(double difficulty) {
+        this(0, difficulty);
     }
     
     /**
      * Creates a new Blockchain.
-     * @param length The length og the Blockchain
+     * @param length The length of the new Blockchain
+     * @param difficulty The difficulty to add a Block to this Blockchain
      */
-    public Blockchain(int length) {
+    public Blockchain(int length, double difficulty) {
         this.length = length;
+        this.difficulty = difficulty;
     }
     
     /**
      * @return A copy of this Blockchain
      */
     public Blockchain copy() {
-        return new Blockchain(length);
+        return new Blockchain(length, difficulty);
     }
     
     /**
-     * Called to add another Block to this Blockchain.
+     * Adds another block to this Blockchain.
      */
     public void addBlock() {
         length++;
@@ -54,6 +57,14 @@ public class Blockchain implements Comparable<Blockchain>{
     public int getLength() {
         return length;
     }
+    
+    /**
+     * @return The difficulty of this Blockchain
+     */
+    public double getDifficulty() {
+        return difficulty;
+    }
+
     
     @Override
     public String toString() {

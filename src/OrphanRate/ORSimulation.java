@@ -2,7 +2,7 @@ package OrphanRate;
 
 import Blockchain.Network;
 import Blockchain.Node;
-import Blockchain.Parameters;
+import DoubleSpend.Parameters;
 import Blockchain.Peers.PeerStrategy;
 import java.util.ArrayList;
 
@@ -32,7 +32,7 @@ public class ORSimulation {
     public ORSimulation(Parameters p, PeerStrategy peerStrategy) {
         
         this.p = p;
-        this.network = new Network(p);
+        this.network = new Network(p.getNodes());
         this.orm = new ORManager(p, this, network);
         
         this.peerStrategy = peerStrategy;

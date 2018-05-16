@@ -1,23 +1,24 @@
-package Blockchain.Peers;
+package DoubleSpend;
 
 import Blockchain.Node;
-import Blockchain.Parameters.IntParameter;
+import Blockchain.Util.Parameter;
+import Blockchain.Peers.Peer;
 import Blockchain.Util.Util;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class ConstantConnectionStrategy extends ConnectionStrategy{
     
-    private IntParameter mean;
+    private Parameter<Integer> mean;
     private double deviationFactor;
     
     /**
      * Each attacker node is connected with each trusted node by a latency 
      * sampled from a normal distribution with constant mean and standard deviation
-     * @param mean
-     * @param deviationFactor
+     * @param mean The integer parameter containing the mean latency between any two nodes
+     * @param deviationFactor The deviation of latency between any two nodes is calculated by deviationFactor*mean
      */
-    public ConstantConnectionStrategy(IntParameter mean, double deviationFactor) {
+    public ConstantConnectionStrategy(Parameter<Integer> mean, double deviationFactor) {
         this.mean = mean;
         this.deviationFactor = deviationFactor;
     }

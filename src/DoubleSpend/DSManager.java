@@ -1,7 +1,6 @@
 package DoubleSpend;
 
 import Blockchain.Network;
-import Blockchain.Parameters;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
@@ -40,7 +39,8 @@ public class DSManager {
     
     /**
      * Called once a trusted Node is newly infested. A Node is considered infested
-     * if it mines on a infested Blockchain.
+     * if it mines on an infested Blockchain.
+     * The double spend attempt is considered succesful if all trusted Nodes have been infested.
      */
     public void addInfested(){
         if(infested.incrementAndGet() == p.getTrustedNodes()){
@@ -76,6 +76,11 @@ public class DSManager {
         checkFailure();
     }
     
+    /**
+     * Newly found Blocks are registered to keep track of 
+     * the longest chain and orphan rates in the Network.
+     * @param newChain The length of the new Blockchain
+     */
     public synchronized void registerAttackerChain(int newChain){
         if(network.stopped())
             return;
@@ -93,7 +98,8 @@ public class DSManager {
     * Reports result to Simulation.
     */
     private void checkFailure(){   
-        //current attempt will be aborted if attackers are falling too far behind
+        //current attempt will be aborted if attackers are falling too far behind,
+        //or a maximum blockchain length has been reached
         if(p.getMaxLead() < trusted - attacker || Math.max(attacker, trusted) > p.getMaxLength()){  
             sim.report(false, attacker, trusted, attackerOrphans, trustedOrphans);
             reset();

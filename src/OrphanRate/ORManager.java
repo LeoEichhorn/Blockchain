@@ -1,7 +1,7 @@
 package OrphanRate;
 
 import Blockchain.Network;
-import Blockchain.Parameters;
+import DoubleSpend.Parameters;
 import java.util.logging.Level;
 
 public class ORManager {

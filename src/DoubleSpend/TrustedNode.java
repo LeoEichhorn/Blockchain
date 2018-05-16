@@ -3,19 +3,21 @@ package DoubleSpend;
 import Blockchain.Blockchain;
 import Blockchain.Network;
 import Blockchain.Node;
-import Blockchain.Parameters;
 import java.util.logging.Level;
 
 public class TrustedNode extends Node{
     private DSManager dsm;
+    private Parameters p;
     
     public TrustedNode(DSManager dsm, Network network, Parameters p, String name) {
-        super(network, p, new DSBlockchain(false), name);
+        super(network, new DSBlockchain(p.getDifficulty(), false), p.getLogLevel(), name);
+        this.p = p;
         this.dsm = dsm;
     }
     
     @Override
     protected void onBlockMined(){
+        //Check wether the new block was mined on an infested chain
         if(((DSBlockchain) blockchain).isInfested()) {
             dsm.registerAttackerChain(blockchain.getLength());
         } else {
@@ -25,6 +27,7 @@ public class TrustedNode extends Node{
     
     @Override
     protected boolean ignoreBlockchain(Blockchain newChain, Node sender) {
+        //Infested blockchains are ignored until the legitimate blockchain has been confirmed
         return ((DSBlockchain) newChain).isInfested() 
             && ((DSBlockchain) blockchain).getLength() < p.getConfirmations();
     }

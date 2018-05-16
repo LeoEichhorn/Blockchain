@@ -1,23 +1,23 @@
 package Blockchain.Peers;
 
+import Blockchain.Util.Parameter;
 import Blockchain.Node;
-import Blockchain.Parameters.IntParameter;
 import Blockchain.Util.Util;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class ConstantPeerStrategy extends PeerStrategy{
     
-    private IntParameter mean;
+    private Parameter<Integer> mean;
     private double deviationFactor;
     
     /**
      * All nodes in the network are connected by a latency sampled from
      * a normal distribution with constant mean and standard deviation
-     * @param mean
-     * @param deviationFactor
+     * @param mean The integer parameter containing the mean latency between any two nodes
+     * @param deviationFactor The deviation of latency between any two nodes is calculated by deviationFactor*mean
      */
-    public ConstantPeerStrategy(IntParameter mean, double deviationFactor) {
+    public ConstantPeerStrategy(Parameter<Integer> mean, double deviationFactor) {
         this.mean = mean;
         this.deviationFactor = deviationFactor;
     }

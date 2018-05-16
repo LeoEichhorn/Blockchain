@@ -1,5 +1,6 @@
-package Blockchain;
+package DoubleSpend;
 
+import Blockchain.Util.Parameter;
 import Blockchain.Util.Util;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,7 +9,7 @@ import java.util.Random;
 import java.util.logging.Level;
 
 public class Parameters {
-    //Number of trusted and attaking nodes (trusted > attacking)
+    //Number of trusted and attaking nodes
     private final int trustedNodes;
     private final int attackerNodes;
     private final int nodes;
@@ -30,7 +31,7 @@ public class Parameters {
     private final DoubleParameter trustedGraphDensity;
     private final DoubleParameter attackerGraphDensity;
     
-    //Number of double spend attemps
+    //Number of Simulation runs
     private final int runs;
 
     //Minimum probability for attackers to catch up
@@ -44,7 +45,7 @@ public class Parameters {
     //Maximum length of Blockchain before declaring attempt as failed
     private final int maxLength;
     
-    //Controls amount of Console output (INFO < FINE < FINER < FINEST)
+    //Controls amount of console output (INFO < FINE < FINER < FINEST)
     private final Level logLevel;
 
     public Parameters(ParametersBuilder b) {
@@ -62,6 +63,7 @@ public class Parameters {
         this.logLevel = b.logLevel;
         
         nodes = trustedNodes + attackerNodes;
+        
         probCatchUpByOne = ((double)attackerNodes) / trustedNodes;
         if (probCatchUpByOne >= 1) {
             maxLead = Integer.MAX_VALUE;
@@ -71,6 +73,9 @@ public class Parameters {
         maxLength = (int) Math.ceil(1 / (epsilon * 100));
     }
     
+    /**
+     * Generates the next set of randomized Parameters
+     */
     public void next() {
         confirmations.next();
         trustedLatency.next();
@@ -164,13 +169,17 @@ public class Parameters {
         return logLevel;
     }
     
-    public static class IntParameter {
+    public static class IntParameter implements Parameter<Integer> {
         private int value;
         private int upper;
         private int lower;
         private Random rng;
         private boolean randomized;
         
+        /**
+         * Creates a new randomizable integer Parameter
+         * @param value The initial value of this Parameter
+         */
         public IntParameter(int value){
             this.value = value;
             randomized = false;
@@ -181,7 +190,8 @@ public class Parameters {
             this.value = value;
         }
         
-        public int getValue() {
+        @Override
+        public Integer getValue() {
             return value;
         }
         
@@ -199,13 +209,17 @@ public class Parameters {
         }  
     }
     
-    public static class DoubleParameter {
+    public static class DoubleParameter implements Parameter<Double> {
         private double value;
         private double upper;
         private double lower;
         private Random rng;
         private boolean randomized;
         
+        /**
+         * Creates a new randomizable double Parameter
+         * @param value The initial value of this Parameter
+         */
         public DoubleParameter(double value){
             this.value = value;
             randomized = false;
@@ -216,7 +230,8 @@ public class Parameters {
             this.value = value;
         }
         
-        public double getValue() {
+        @Override
+        public Double getValue() {
             return value;
         }
         
@@ -250,7 +265,7 @@ public class Parameters {
         private double epsilon;
         private Level logLevel;
         
-        
+
         public ParametersBuilder() {
             this.p = new Properties();
             this.trustedNodes  = 32;

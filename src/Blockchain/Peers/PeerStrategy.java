@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public abstract class PeerStrategy {   
 
     /**
-     * Connects all nodes according to the concrete implementation.
+     * Connects all nodes according to the specific implementation.
      * @param nodes The nodes to be connected.
      * @return The maximum latency between any two peers in the created network
      */
