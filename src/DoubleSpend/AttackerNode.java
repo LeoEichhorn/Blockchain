@@ -11,7 +11,7 @@ public class AttackerNode extends Node{
     private DSManager dsm;
     
     public AttackerNode(DSManager dsm, Network network, Parameters p, String name) {
-        super(network, new DSBlockchain(p.getDifficulty(), false), p.getLogLevel(), name);
+        super(network, new DSBlockchain(p.getDifficulty(), false), name);
         this.dsm = dsm;
     }
     
@@ -25,4 +25,7 @@ public class AttackerNode extends Node{
         //Only infested Blockchains (containing the altered transaction) are accepted
         return !((DSBlockchain) newChain).isInfested();
     }
+
+    @Override
+    protected void onChoice(Blockchain oldChain, Blockchain newChain) {}
 }

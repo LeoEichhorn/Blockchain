@@ -4,6 +4,7 @@ import Blockchain.Network;
 import Blockchain.Node;
 import Blockchain.Peers.PeerStrategy;
 import Blockchain.Peers.RndGraphPeerStrategy;
+import Blockchain.Util.Logger;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -15,7 +16,6 @@ import java.util.logging.Level;
 public class DSSimulation {
     private Parameters p;
     private Network network;
-    private DSManager dsm;
     
     //Number of (un-)successful Double Spend attempts
     private volatile int success;
@@ -25,9 +25,9 @@ public class DSSimulation {
     private volatile int aBlocks, tBlocks;
     private volatile int aOrphans, tOrphans;
     
-    private PeerStrategy trustedPeerStrategy;
-    private PeerStrategy attackerPeerStrategy;
-    private ConnectionStrategy attackerStrategy;
+    private PeerStrategy trustedPeerStrat;
+    private PeerStrategy attackerPeerStrat;
+    private ConnectionStrategy attackerStrat;
     
     private ArrayList<Node> trustedNodes;
     private ArrayList<Node> attackerNodes;
@@ -47,22 +47,21 @@ public class DSSimulation {
     /**
      * Creates a new Simulation for double spends.
      * @param p The Parameters of this Simulation
-     * @param trustedPeerStrategy The PeerStrategy of creating the trusted network
-     * @param attackerPeerStrategy The PeerStrategy of creating the attacker network
-     * @param attackerStrategy The Strategy of connecting the attacker network with the trusted network
+     * @param trustedPeerStrat The PeerStrategy of creating the trusted network
+     * @param attackerPeerStrat The PeerStrategy of creating the attacker network
+     * @param attackerStrat The Strategy of connecting the attacker network with the trusted network
      * @param resetPeers True - Peer network should be reset after each run
      */
-    public DSSimulation(Parameters p, PeerStrategy trustedPeerStrategy, 
-            PeerStrategy attackerPeerStrategy, ConnectionStrategy attackerStrategy, boolean resetPeers) {
+    public DSSimulation(Parameters p, PeerStrategy trustedPeerStrat, 
+            PeerStrategy attackerPeerStrat, ConnectionStrategy attackerStrat, boolean resetPeers) {
         
         this.p = p;
-        this.network = new Network(p.getNodes());
-        this.dsm = new DSManager(p, this, network);
+        this.network = new Network();
         this.success = this.failure = 0;
         
-        this.trustedPeerStrategy = trustedPeerStrategy;
-        this.attackerPeerStrategy = attackerPeerStrategy;
-        this.attackerStrategy = attackerStrategy;
+        this.trustedPeerStrat = trustedPeerStrat;
+        this.attackerPeerStrat = attackerPeerStrat;
+        this.attackerStrat = attackerStrat;
         
         this.trustedNodes = new ArrayList<>(p.getTrustedNodes());
         this.attackerNodes = new ArrayList<>(p.getAttackerNodes());
@@ -70,7 +69,7 @@ public class DSSimulation {
         
         this.resetPeers = resetPeers;
         
-        
+        DSManager dsm = new DSManager(p, this, network);
         for (int i = 0; i < p.getTrustedNodes(); i++) {
             trustedNodes.add(new TrustedNode(dsm, network, p, "Trusted "+i));
         }
@@ -86,10 +85,10 @@ public class DSSimulation {
     private void createPeers() {
         for(Node n : nodes)
             n.resetPeers();
-        long maxTrustedLatency = trustedPeerStrategy.connectPeers(trustedNodes);
-        long maxAttackerLatency = attackerPeerStrategy.connectPeers(attackerNodes);
+        long maxTrustedLatency = trustedPeerStrat.connectPeers(trustedNodes);
+        long maxAttackerLatency = attackerPeerStrat.connectPeers(attackerNodes);
         long maxLatency = Math.max(maxTrustedLatency, maxAttackerLatency);
-        long maxConnLatency = attackerStrategy.connectPeers(attackerNodes, trustedNodes);
+        long maxConnLatency = attackerStrat.connectPeers(attackerNodes, trustedNodes);
         maxLatency = Math.max(maxLatency, maxConnLatency);
         network.setMaxLatency(maxLatency);
     }
@@ -104,9 +103,13 @@ public class DSSimulation {
                 createPeers();
             network.run();
         }
-        System.out.println("Successful Double Spends: "+success);
-        System.out.println("Trusted Orphan Rate: "+((double)tOrphans)/tBlocks);
-        System.out.println("Attacker Orphan Rate: "+((double)aOrphans)/aBlocks);
+        
+        Logger.log(Level.INFO, String.format(
+                "Successful Double Spends: %d\n"
+                + "Trusted Orphan Rate: %s\n"
+                + "Attacker Orphan Rate: %s",
+                success, ""+((double)tOrphans)/tBlocks, ""+((double)aOrphans)/aBlocks
+        ));
     }
     
     /**
@@ -123,12 +126,12 @@ public class DSSimulation {
         
         if(successful){
             success++;
-            if(p.getLogLevel().intValue() <= Level.FINE.intValue())
-                System.out.println((success+failure)+": SUCCESS t:"+trustedChain+" a:"+attackerChain);
+            Logger.log(Level.FINE, String.format("%d: SUCCESS t:%d a:%d", 
+                    success+failure,trustedChain,attackerChain));
         }else{
             failure++;
-            if(p.getLogLevel().intValue() <= Level.FINE.intValue())
-                System.out.println((success+failure)+": FAILURE t:"+trustedChain+" a:"+attackerChain);
+            Logger.log(Level.FINE, String.format("%d: FAILURE t:%d a:%d", 
+                    success+failure,trustedChain,attackerChain));
         }
         
         aBlocks += attackerChain+attackerOrphans;

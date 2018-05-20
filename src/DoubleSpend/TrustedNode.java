@@ -3,6 +3,7 @@ package DoubleSpend;
 import Blockchain.Blockchain;
 import Blockchain.Network;
 import Blockchain.Node;
+import Blockchain.Util.Logger;
 import java.util.logging.Level;
 
 public class TrustedNode extends Node{
@@ -10,7 +11,7 @@ public class TrustedNode extends Node{
     private Parameters p;
     
     public TrustedNode(DSManager dsm, Network network, Parameters p, String name) {
-        super(network, new DSBlockchain(p.getDifficulty(), false), p.getLogLevel(), name);
+        super(network, new DSBlockchain(p.getDifficulty(), false), name);
         this.p = p;
         this.dsm = dsm;
     }
@@ -37,12 +38,10 @@ public class TrustedNode extends Node{
         boolean infestedBefore = ((DSBlockchain) oldChain).isInfested();
         boolean infestedAfter = ((DSBlockchain) newChain).isInfested();
         if(infestedBefore && !infestedAfter){
-            if(p.getLogLevel().intValue() <= Level.FINEST.intValue())
-                System.out.println(name+": No longer infested!");
+            Logger.log(Level.FINEST, String.format("%s: No longer infested!",name));
             dsm.removeInfested();
         }else if(!infestedBefore && infestedAfter){
-            if(p.getLogLevel().intValue() <= Level.FINEST.intValue())
-                System.out.println(name+": Is now infested!");
+            Logger.log(Level.FINEST, String.format("%s: Is now infested!",name));
             dsm.addInfested();
         }
     }

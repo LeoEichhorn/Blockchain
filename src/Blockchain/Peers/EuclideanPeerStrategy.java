@@ -8,7 +8,7 @@ import java.util.Random;
 public class EuclideanPeerStrategy extends PeerStrategy{
     private int width;
     private int height;
-    private double stdDev;
+    private double deviationFactor;
     private Random rnd;
 
     /**
@@ -17,12 +17,12 @@ public class EuclideanPeerStrategy extends PeerStrategy{
      * proportional to the nodes' euclidiean distance with constant standard deviation.
      * @param width The width of the plane.
      * @param height The height of the plane
-     * @param stdDev The standard deviation
+     * @param deviationFactor The deviation of latency between any two nodes is calculated by deviationFactor*mean
      */
-    public EuclideanPeerStrategy(int width, int height, double stdDev) {
+    public EuclideanPeerStrategy(int width, int height, double deviationFactor) {
         this.width = width;
         this.height = height;
-        this.stdDev = stdDev;
+        this.deviationFactor = deviationFactor;
         this.rnd = new Random();
     }
 
@@ -45,7 +45,8 @@ public class EuclideanPeerStrategy extends PeerStrategy{
     }
     
     private long latency(Point a, Point b) {
-        return (long) Util.nextGaussian(rnd, Math.sqrt(Math.pow(a.x-b.x, 2)+Math.pow(a.y-b.y, 2)),stdDev);
+        double mean = Math.sqrt(Math.pow(a.x-b.x, 2)+Math.pow(a.y-b.y, 2));
+        return (long) Util.nextGaussian(rnd, mean, mean*deviationFactor);
     }
     
     private Point rndPoint() {

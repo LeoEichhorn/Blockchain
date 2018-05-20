@@ -1,6 +1,7 @@
 package OrphanRate;
 
 import Blockchain.Network;
+import Blockchain.Util.Logger;
 import DoubleSpend.Parameters;
 import java.util.logging.Level;
 
@@ -31,8 +32,8 @@ public class ORManager {
             return;
         }
         chainLength = length;
-        if(p.getLogLevel().intValue() <= Level.FINE.intValue())
-            System.out.println("Chain: "+length);
+        
+        Logger.log(Level.FINE, String.format("Chain: %d",length));
         
         if(chainLength >= p.getMaxLength()) {
             sim.report(chainLength, orphans);

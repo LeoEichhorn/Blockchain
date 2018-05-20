@@ -10,7 +10,7 @@ public class ORNode extends Node{
     private ORManager orm;
     
     public ORNode(ORManager orm, Network network, Parameters p, String name) {
-        super(network, new Blockchain(p.getDifficulty()), p.getLogLevel(), name);
+        super(network, new Blockchain(p.getDifficulty()), name);
         this.orm = orm;
     }
     
@@ -18,4 +18,12 @@ public class ORNode extends Node{
     protected void onBlockMined(){
         orm.registerChain(blockchain.getLength());
     }
+
+    @Override
+    protected boolean ignoreBlockchain(Blockchain newChain, Node sender) {
+        return false;
+    }
+
+    @Override
+    protected void onChoice(Blockchain oldChain, Blockchain newChain) {}
 }

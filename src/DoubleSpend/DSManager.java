@@ -1,6 +1,7 @@
 package DoubleSpend;
 
 import Blockchain.Network;
+import Blockchain.Util.Logger;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
@@ -10,9 +11,9 @@ import java.util.logging.Level;
  */
 public class DSManager {
     //Length of longest trusted chain
-    private int trusted;
+    private int maxTrustedChain;
     //Length of longest attacker chain
-    private int attacker;
+    private int maxAttackerChain;
     
     //Number of Orphans created by the trusted network
     private int trustedOrphans;
@@ -30,8 +31,8 @@ public class DSManager {
         this.p = p;
         this.sim = sim;
         this.network = network;
-        this.attacker = 0;
-        this.trusted  = 0;
+        this.maxAttackerChain = 0;
+        this.maxTrustedChain  = 0;
         this.trustedOrphans = 0;
         this.attackerOrphans = 0;
         this.infested = new AtomicInteger();
@@ -45,7 +46,7 @@ public class DSManager {
     public void addInfested(){
         if(infested.incrementAndGet() == p.getTrustedNodes()){
             synchronized (this) {
-                sim.report(true, attacker, trusted, attackerOrphans, trustedOrphans);
+                sim.report(true, maxAttackerChain, maxTrustedChain, attackerOrphans, trustedOrphans);
                 reset();
             }
         }
@@ -61,18 +62,17 @@ public class DSManager {
     /**
      * Newly found Blocks are registered to keep track of 
      * the longest chain and orphan rates in the Network.
-     * @param newChain The length of the new Blockchain
+     * @param chainLength The length of the new Blockchain
      */
-    public synchronized void registerTrustedChain(int newChain){
+    public synchronized void registerTrustedChain(int chainLength){
         if(network.stopped())
             return;
-        if(trusted >= newChain){
+        if(maxTrustedChain >= chainLength){
             trustedOrphans++;
             return;
         }
-        trusted = newChain;
-        if(p.getLogLevel().intValue() <= Level.FINER.intValue())
-            System.out.println("Trusted chain: "+trusted);
+        maxTrustedChain = chainLength;
+        Logger.log(Level.FINER, String.format("Trusted chain: %d",maxTrustedChain));
         checkFailure();
     }
     
@@ -84,13 +84,12 @@ public class DSManager {
     public synchronized void registerAttackerChain(int newChain){
         if(network.stopped())
             return;
-        if(attacker >= newChain){
+        if(maxAttackerChain >= newChain){
             attackerOrphans++;
             return;
         }
-        attacker = newChain;
-        if(p.getLogLevel().intValue() <= Level.FINER.intValue())
-            System.out.println("Attacker chain: "+attacker);
+        maxAttackerChain = newChain;
+        Logger.log(Level.FINER, String.format("Attacker chain: %d",maxAttackerChain));
     }
     
     /**
@@ -100,15 +99,15 @@ public class DSManager {
     private void checkFailure(){   
         //current attempt will be aborted if attackers are falling too far behind,
         //or a maximum blockchain length has been reached
-        if(p.getMaxLead() < trusted - attacker || Math.max(attacker, trusted) > p.getMaxLength()){  
-            sim.report(false, attacker, trusted, attackerOrphans, trustedOrphans);
+        if(p.getMaxLead() < maxTrustedChain - maxAttackerChain || Math.max(maxAttackerChain, maxTrustedChain) > p.getMaxLength()){  
+            sim.report(false, maxAttackerChain, maxTrustedChain, attackerOrphans, trustedOrphans);
             reset();
         }
     }
     
     private void reset() {
         infested = new AtomicInteger();
-        attacker = trusted = 0;
+        maxAttackerChain = maxTrustedChain = 0;
         attackerOrphans = trustedOrphans = 0;
     }
 }

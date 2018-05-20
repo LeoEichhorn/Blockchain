@@ -1,6 +1,7 @@
 package Blockchain;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -10,10 +11,9 @@ import java.util.concurrent.TimeUnit;
  * Controls execution of Nodes in the Network and their synchronization.
  */
 public class Network {
-    private int nodeCount;
     
     //All nodes in the Network
-    private ArrayList<Node> nodes;
+    private List<Node> nodes;
     
     //Maximum latency between any two peers
     private long maxLatency;
@@ -21,8 +21,7 @@ public class Network {
     //Network status
     private volatile boolean stopped;
     
-    public Network(int nodeCount){
-        this.nodeCount = nodeCount;
+    public Network(){
         this.stopped = true;
         this.nodes = new ArrayList<>();
         this.maxLatency = 5000;
@@ -36,13 +35,13 @@ public class Network {
     public void run() {
         stopped = false;
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(10);
-        CyclicBarrier gate = new CyclicBarrier(nodeCount);
+        CyclicBarrier gate = new CyclicBarrier(nodes.size());
         
         for(Node n : nodes) {
             n.reset(gate, executor);
         }
         for (Node n : nodes) {
-            n.start();
+            n.startMining();
         }
         for (Node n : nodes) {
             n.join();
@@ -54,7 +53,7 @@ public class Network {
         }catch (InterruptedException e){}
     }
     
-    public void setNodes(ArrayList<Node> nodes) {
+    public void setNodes(List<Node> nodes) {
         this.nodes = nodes;
     }
     

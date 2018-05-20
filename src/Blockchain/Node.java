@@ -2,6 +2,7 @@ package Blockchain;
 
 import Blockchain.Peers.Peer;
 import Blockchain.Util.CyclicBarrierUtil;
+import Blockchain.Util.Logger;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
@@ -14,7 +15,7 @@ import java.util.logging.Level;
 /**
  * Basic implementation of a mining Node.
  */
-public class Node { 
+public abstract class Node { 
     //Network this Node is in
     private final Network network;
     
@@ -25,21 +26,18 @@ public class Node {
     protected Blockchain blockchain;
     
     private Thread miningThread;
-    protected final Level logLevel;
     protected final String name;
     
     /**
      * Creates a new Node
      * @param network The network this Node is in.
-     * @param logLevel Controls the amount of console output (INFO < FINE < FINER < FINEST)
      * @param blockchain Initial copy of the Blockchain
      * @param name The name of this Node
      */
-    public Node(Network network, Blockchain blockchain, Level logLevel, String name){
+    public Node(Network network, Blockchain blockchain, String name){
         this.network = network;
         this.peers = new LinkedList<>();
         this.blockchain = blockchain;
-        this.logLevel = logLevel;
         this.name = name;
     }
     
@@ -75,14 +73,14 @@ public class Node {
      * Node should be reset first.
      * Starts this Node's mining thread.
      */
-    public void start() {
+    public void startMining() {
         miningThread.start();
     }
     
     /**
      * Joins this node's mining thread.
      */
-    public void join() {
+    public final void join() {
         try{
             miningThread.join();
         }catch(InterruptedException e){}    
@@ -95,14 +93,13 @@ public class Node {
     private synchronized void blockFound(ScheduledExecutorService executor) {
         blockchain.addBlock();
         
-        if(logLevel.intValue() <= Level.FINER.intValue())
-            System.out.printf("%s found Block! Sending chain of length %d to Peers...\n",
-                    name, blockchain.getLength());
+        Logger.log(Level.FINER, String.format("%s found Block! Sending chain of length %d to Peers...",
+                name, blockchain.getLength()));
         
         peers.stream().forEach(peer -> {
             final Blockchain toSend = blockchain.copy();
             executor.schedule(() -> {
-                peer.getNode().recieveBlockchain(toSend, this);
+                peer.getNode().receiveBlockchain(toSend, this);
             }, peer.getLatency(), TimeUnit.MILLISECONDS);
         });
         
@@ -115,32 +112,31 @@ public class Node {
      * @param newChain The recieved Blockchain
      * @param sender The sending Node
      */
-    public synchronized void recieveBlockchain(Blockchain newChain, Node sender) {
+    public synchronized void receiveBlockchain(Blockchain newChain, Node sender) {
         if(ignoreBlockchain(newChain, sender))
             return;
         
         Blockchain oldChain = blockchain;
         if(newChain.compareTo(blockchain) > 0){
             
-            if(logLevel.intValue() <= Level.FINEST.intValue())
-                System.out.printf("%s: Accepting new Blockchain %s from %s\n",
-                        name, newChain, sender.getName());
+            Logger.log(Level.FINEST, String.format("%s: Accepting new Blockchain %s from %s",
+                name, newChain, sender.getName()));
             
             blockchain = newChain;
             
-        }else if(logLevel.intValue() <= Level.FINEST.intValue()){
-            System.out.printf("%s: Declining new Blockchain %s from %s\n",
-                        name, newChain, sender.getName());
+        }else{
+            Logger.log(Level.FINEST, String.format("%s: Declining new Blockchain %s from %s",
+                name, newChain, sender.getName()));
         }
         
         onChoice(oldChain, blockchain);
     }
     
-    public void addPeer(Peer p) {
+    public final void addPeer(Peer p) {
         peers.add(p);
     }
     
-    public void resetPeers() {
+    public final void resetPeers() {
         peers.clear();
     }
     
@@ -154,9 +150,7 @@ public class Node {
      * @param sender The sending Node
      * @return If newChain should be ignored
      */
-    protected boolean ignoreBlockchain(Blockchain newChain, Node sender) {
-        return false;
-    }
+    protected abstract boolean ignoreBlockchain(Blockchain newChain, Node sender);
     
     /**
      * Called after the decision was made, wether mining should continue on 
@@ -164,10 +158,10 @@ public class Node {
      * @param oldChain The Blockchain that was originally mined on
      * @param newChain The newly accepted Blockchain (might be equal to oldChain)
      */
-    protected void onChoice(Blockchain oldChain, Blockchain newChain) {}
+    protected abstract void onChoice(Blockchain oldChain, Blockchain newChain);
 
     /**
      * Called after a new Block has been mined and transmitted to this Node's Peers
      */
-    protected void onBlockMined() {}
+    protected abstract void onBlockMined();
 }

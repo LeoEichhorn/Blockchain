@@ -4,7 +4,9 @@ import Blockchain.Network;
 import Blockchain.Node;
 import DoubleSpend.Parameters;
 import Blockchain.Peers.PeerStrategy;
+import Blockchain.Util.Logger;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 /**
  * Simulation of a Network of Trusted and Attacking Nodes, where Attacking Nodes
@@ -32,7 +34,7 @@ public class ORSimulation {
     public ORSimulation(Parameters p, PeerStrategy peerStrategy) {
         
         this.p = p;
-        this.network = new Network(p.getNodes());
+        this.network = new Network();
         this.orm = new ORManager(p, this, network);
         
         this.peerStrategy = peerStrategy;
@@ -58,9 +60,13 @@ public class ORSimulation {
     public void start() {
         createPeers();
         network.run();
-        System.out.println("Orphans: "+orphans);
-        System.out.println("Blocks: "+blocks);
-        System.out.println("Orphan Rate: "+((double)orphans)/blocks);
+        
+        Logger.log(Level.INFO, String.format(
+                "Orphans: %d\n"
+                + "Blocks: %d\n"
+                + "Orphan Rate: %s",
+                orphans, blocks, ""+((double)orphans)/blocks
+        ));
     }
     
     /**

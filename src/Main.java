@@ -2,6 +2,7 @@ import DoubleSpend.Parameters;
 import DoubleSpend.Parameters.*;
 import DoubleSpend.DSSimulation;
 import Blockchain.Peers.*;
+import Blockchain.Util.Logger;
 import OrphanRate.ORSimulation;
 import java.io.IOException;
 
@@ -23,7 +24,7 @@ public class Main {
             System.err.println("Error loading parameters:\n"+ex);
             System.exit(1);
         }
-        
+        Logger.setLevel(p.getLogLevel());
         doubleSpend(p);
     }
 
