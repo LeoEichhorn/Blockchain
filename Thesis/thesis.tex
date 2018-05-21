@@ -121,28 +121,40 @@
 
 \chapter{Background}
 \section{Blockchain}
-A blockchain is a public\footnote{In this thesis, only permissionless blockchains are considered, for permissioned blockchains see for example: \cite{p}}, distributed ledger used to record, identify and verify contracts, transactions or other shared data between multiple parties. These records are stored in a continuously growing list, which is locally maintained and updated by each individual member (node) of the protocol. Entries of the list (blocks) are cryptographically linked by including a hash of the previous block as a unique identifier in each newly added entry. More specifically, altering contents of a block changes its unique identifier, forcing a recalculation of every following block currently in the list, in order to retain integrity of the ledger. If consensus between nodes is reached through proof of work (Section \ref{pow}), consistently performing such an operation requires a substantial amount of computing power, arguably more than 50\% of the total computing power available to the whole Network. Newly created blocks are sent to all members to keep local blockchain copies synchronized. By adhering to a distributed consensus protocol, the participating nodes validate potential extensions of their blockchain copy in a peer-to-peer manner, thereby eliminating the need for an intermediary, trusted authority. 
+A blockchain is a public\footnote{In this thesis, only permissionless blockchains are considered, for permissioned blockchains see for example: \cite{p}}, distributed ledger used to record, identify and verify contracts, transactions or other shared data between multiple parties. These records are stored in a continuously growing list, which is locally maintained and updated by each individual member (\textit{node}) of the protocol. Entries of the list (\textit{blocks}) are cryptographically linked by including a hash of the previous block as a unique identifier in each newly added entry. More specifically, altering contents of a block changes its unique identifier, forcing a recalculation of every following block currently in the list, in order to retain integrity of the ledger. If consensus between nodes is reached through proof of work (Section \ref{pow}), performing such an operation consistently requires a substantial amount of computing power, arguably more than 50\% of the total computing power available to the whole Network. Newly created blocks are sent to all members to keep local blockchain copies synchronized. By adhering to a distributed consensus protocol, the participating nodes validate potential extensions of their blockchain copy in a peer-to-peer manner, thereby eliminating the need for an intermediary, trusted authority. 
  
-\subsection{Applications}
-
-\subsubsection{Cryptocurrencies}
-\subsubsection{Smart Contracts}
-
 \section{Bitcoin}
-To improve our understanding of the blockchain technology and dynamics in a blockchain network we will now have a closer look at Bitcoin as a concrete example of a blockchain using proof of work 
-
-
+To gain a better understanding of the blockchain technology and dynamics in a blockchain network, we will provide a short summary of Bitcoin as a concrete example of application. For a more detailed description of the Bitcoin protocol, refer to \cite{nakamoto2008bitcoin,antonopoulos2017mastering,okupski2014bitcoin}. Bitcoin is a decentralized digital cryptocurrency created by Satoshi Nakamoto in 2008. In the original Bitcoin paper \cite{nakamoto2008bitcoin}, Nakamoto briefly describes the concepts of the proposed protocol and introduces Blockchains as a solution to the apparent double-spending problem. Since Bitcoin is operating entirely on a peer-to-peer basis, a central, monitoring authority, known from services like \textit{Visa} or \textit{Paypal}, does not exist. To still guarantee that the same transaction cannot be sent multiple times and the sender's capital is sufficient, Nakamoto's blockchain stores each successful transaction, marked with a unique ID. This way, the sender's liquidity can easily be confirmed by traversing the public transaction history and calculating the sum of previous transactions. \cite{nakamoto2008bitcoin,bitcoinwiki}
 
 \subsection{Transactions}
+Bitcoin wallets and transactions are based on asymmetric cryptography. More specifically, a \textit{wallet} can be described as the collection of a private and a public key \cite{okupski2014bitcoin}. If Alice wants to send a transaction to Bob, she first signs her newly created transaction with the private key of her wallet and specifies the receiver using Bob's public key. By verifying Alice's signature with her public key, Bob is able to proof the authenticity of Alice and the integrity of her transaction. Since Alice's BTC balance isn't represented by a single number, she has to specify previous transactions sent to her, as \textit{inputs} to her new transaction to Bob. The values of these input transactions have to sum up to at least the amount of BTC she wants to send to Bob. Since transaction values cannot be divided, Alice can declare her own account as an \textit{output} to her transaction, next to any other receiver, to collect her change. Additional BTCs without corresponding output result in the \textit{transaction fee}, which is used to incentivize miners to include the transaction into their next block. The fee is claimed by the first node incorporating the transaction into the blockchain. The process of using existing transactions as inputs for new transactions leads to the strict distinction between \textit{spent} and \textit{unspent} transaction output (UTXO). The sum of UTXOs therefore determines the current balance of a Bitcoin account.
 
+In \autoref{fig1}, Alice creates a new transaction and uses two accounts to send 2 BTC to Bob. She specifies the UTXOs she would like to use as inputs and leaves 0.02 BTC as a transaction fee. In transaction 817, Alice and Bob each send 0.05 BTC to Charlie, by using the UTXOs of the previous transaction. \cite{DSAwithTime}
+\begin{figure}[ht]
+	\centering
+  \includegraphics[scale=0.7]{TransactionExample.png}
+	\caption{Example of two BTC transactions (simplified) \cite{DSAwithTime}}
+	\label{fig1}
+\end{figure}
 
 \subsection{Blocks}
+collecting transactions, coinbase transaction, verifying transactions, main parts of a block
+\begin{figure}[ht]
+	\centering
+  \includegraphics[scale=0.7]{BlockExample.png}
+	\caption{Example of transaction block \cite{DSAwithTime}}
+	\label{fig1}
+\end{figure}
+
 \subsection{Proof of Work} \label{pow}
 \subsection{Peer-to-peer Networks}
 
 \section{Double-spend Attacks}
 
-\section{Summary}
+\subsection{Other Applications}
+
+\subsubsection{Cryptocurrencies}
+\subsubsection{Smart Contracts}
 %------- chapter 3 -------
 
 \chapter{Related Work}
@@ -164,11 +176,21 @@ It is interesting to note that all of the before mentioned models produce simila
 \item Double-spend attacks are always possible, regardless of the number of confirmations and amount of computational power controlled by the attacker.
 \end{itemize}
 \section{Simulations}
-An important remark can be seen in the fact that none of the before mentioned hashrate-based models have been confirmed by experimental data or tests in an exhaustive and realistic way. Instead, the validity of these models relies mostly on mathematical proofs and expertise, or the comparison with other, similar models. Nevertheless, one exception can be made with \cite{NakamotoExplMCSim}. After presenting a detailed explanation of Nakamoto's model for double-spends, the author validates the mathematical approach by performing a Monte Carlo simulation \cite{montecarlo} with different sets of input. In the light of this, the author identifies an error of the model, which is linked to its use of the poisson distribution. In spite of this success, the Monte Carlo simulation is missing parameters of a real blockchain protocol and ``does not actually
-mine coin, it simply flips some coins to see whether each miner wins a block as simulated'' \cite{NakamotoExplMCSim}. Arguably important factors of blockchain dynamics, such as network propagation, mining difficulty and timing are disregarded. A more realistic simulation approach to a similar attack on Bitcoin blockchains is presented by \cite{mwalemodel}.
+An important remark can be seen in the fact that none of the before mentioned hashrate-based models have been confirmed or supported by experimental data or tests in an exhaustive and realistic way. Instead, the validity of these models relies mostly on mathematical proofs and expertise, or the comparison with other, similar models. Nevertheless, one exception can be made with \cite{NakamotoExplMCSim}. After presenting a detailed explanation of Nakamoto's model for double-spends, the author validates the mathematical approach by performing a Monte Carlo simulation \cite{montecarlo} with different sets of input. In the light of this, the author identifies an error of the model, which is linked to its use of the poisson distribution. In spite of this success, the Monte Carlo simulation is missing parameters of a real blockchain protocol and ``does not actually
+mine coin, it simply flips some coins to see whether each miner wins a block as simulated'' \cite{NakamotoExplMCSim}. A more realistic simulation of a different attack on Bitcoin blockchains, the selfish-mine attack, is presented by \cite{mwalemodel}. In this model of the Bitcoin protocol, random (\textit{x}, \textit{y})-coordinates of a two dimensional plane are assigned to each node in order to create a simple network topology. By simulating the latency between two nodes as proportional to their euclidean distance in the plane, \cite{mwalemodel} successfully models block propagation times of a real network. During the simulation, new blocks are again generated as instances of a poisson process with an average rate of ten minutes. 
 \section{Other Attacks}
+Next to double-spend atttacks, a wide variety of different attacks against blockchains and the Bitcoin protocol have been conceptualized. The already mentioned \textit{selfish-mine attack}, or \textit{block-discarding attack}, focuses on invalidating the honest miners' work, by selectively publishing premined blocks to the network. \cite{mwalemodel,selfishmine1,selfishmine2,lessThanHalfDraft}. According to \cite{lessThanHalfDraft} and \cite{selfishmine1} this attack can succeed with a fraction of 25\% total hashing power controlled by the attacker. The \textit{whale attack} presented by \cite{whaleattack} aims to increase an attackers chances of successful double-spends by publishing transactions with large mining fees, to incentivize honest miners to build on a fraudulent blockchain fork. \cite{premining1} and \cite{premining2} further capitalize on the \textit{premining} strategy of secretly mining blocks ahead of the honest blockchain, while also including a reversed transaction to the target. Once the attacker has gained a comfortable lead, the original transaction to the target merchant is released. Now the lead of the attackers' fork only has to be maintained until the transaction has been confirmed in order to perform a double-spend. The authors demonstrate how this attack can be used to increase the probability of double-spend attacks, when timing of the transaction used as bait is not important.
 \section{Contribution}
-factor hidden behind ambiguous parameter hashrate
+It can clearly be observed, that despite the impressive amount of work being done towards the formalization of theoretical attack models against blockchains and especially double-spends attacks, barely anything has been validated by empirical evidence or data. Instead, correctness of the proposed models is achieved by mathematical proofs, while arguably important factors of blockchain dynamics are disregarded or hidden behind intangible parameters like the ``hashrate''. In this thesis we will therefore counter this trend and design a \textit{java} framework to model simulations of blockchain architectures. This framework will subsequently be used to implement an exemplary simulator for double-spend attacks. The goal is to increase the understanding of factors affecting the resistance of blockchain architectures against double-spend attacks and to improve an architect's predictions based on results generated by the model. This will be achieved by conducting experiments based on real world inspired parameters of a blockchain protocol using our simulator. These parameters include specifically:
+\begin{itemize}
+\item The number of attacking and trusted nodes
+\item The difficulty of mining a new block
+\item The number of confirmations used by the target
+\item Topology and density of the attacking and defending network
+\item Latency in the attacking and defending network
+\item Latency of the connection between attacking and defending network
+\end{itemize}
+Using these parameters and the simulator framework, we will then propose our own mathematical model for double-spend attacks, based on data generated by several experiments and tests.
 %------- chapter 4 -------
 
 \chapter{Approach}
@@ -222,6 +244,14 @@ factor hidden behind ambiguous parameter hashrate
 \section{Conclusion}
 
 \section{Future Work}
+\begin{itemize}
+\item validate models mentioned in related work
+\item implement other attacks mentioned in related work on blockchains using framework
+\item identify missing parameters
+\item conduct more tests
+\end{itemize}
+
+
 
 
 \appendix
