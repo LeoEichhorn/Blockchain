@@ -121,12 +121,19 @@
 
 \chapter{Background}
 \section{Blockchain}
-A blockchain is a public\footnote{In this thesis, only permissionless blockchains are considered, for permissioned blockchains see for example: \cite{p}}, distributed ledger used to record, identify and verify contracts, transactions or other shared data between multiple parties. These records are stored in a continuously growing list, which is locally maintained and updated by each individual member (\textit{node}) of the protocol. Entries of the list (\textit{blocks}) are cryptographically linked by including a hash of the previous block as a unique identifier in each newly added entry. More specifically, altering contents of a block changes its unique identifier, forcing a recalculation of every following block currently in the list, in order to retain integrity of the ledger. If consensus between nodes is reached through proof of work (Section \ref{pow}), performing such an operation consistently requires a substantial amount of computing power, arguably more than 50\% of the total computing power available to the whole Network. Newly created blocks are sent to all members to keep local blockchain copies synchronized. By adhering to a distributed consensus protocol, the participating nodes validate potential extensions of their blockchain copy in a peer-to-peer manner, thereby eliminating the need for an intermediary, trusted authority. 
+A blockchain is a public\footnote{In this thesis, only permissionless blockchains are considered, for permissioned blockchains see for example: \cite{permissioned}}, distributed ledger used to record, identify and verify contracts, transactions or other shared data between multiple parties. The resulting records are stored in a continuously growing list, which is locally maintained and updated by each individual member (\textit{node}) of the protocol. Entries of the list (\textit{blocks}) are cryptographically linked by including a hash of the previous block as a unique identifier in each newly added entry (\autoref{blockchain}). More specifically, altering contents of a block changes its unique identifier, forcing a recalculation of every following block currently in the list, in order to retain integrity of the ledger. If consensus between nodes is reached through proof of work (Section \ref{pow}), performing such an operation consistently requires a substantial amount of computing power, arguably more than 50\% of the total computing power available to the whole Network. Newly created blocks are sent to all members to keep local blockchain copies synchronized. By adhering to a distributed consensus protocol, the participating nodes validate potential extensions of their blockchain copy in a peer-to-peer manner, thereby eliminating the need for an intermediary, trusted authority. 
+
+\begin{figure}[ht]
+	\centering
+  \includegraphics[width=\textwidth]{blockchain.png}
+	\caption{Visualization of blocks connected by their hashes}
+	\label{blockchain}
+\end{figure}
  
 \section{Bitcoin}
 To gain a better understanding of the blockchain technology and dynamics in a blockchain network, we will provide a short summary of Bitcoin as a concrete example of application. For a more detailed description of the Bitcoin protocol, refer to \cite{nakamoto2008bitcoin,antonopoulos2017mastering,okupski2014bitcoin}.
 
- Bitcoin is a decentralized digital cryptocurrency created by Satoshi Nakamoto in 2008. In the original Bitcoin paper \cite{nakamoto2008bitcoin}, Nakamoto briefly describes the concepts of the proposed protocol and introduces Blockchains as a solution to the apparent double-spending problem. Since Bitcoin is operating entirely on a peer-to-peer basis, a central, monitoring authority, known from services like \textit{Visa} or \textit{Paypal}, does not exist. To still guarantee that the same transaction cannot be sent multiple times and the sender's capital is sufficient, Nakamoto's blockchain operates as a public ledger and stores each successful transaction, marked with a unique ID. By creating this synchronized and chronological order of transaction events, a sender's liquidity can easily be confirmed by traversing the public blockchain history and calculating the result of all previous transactions. \cite{nakamoto2008bitcoin,bitcoinwiki}
+ Bitcoin is a decentralized digital cryptocurrency created by Satoshi Nakamoto in 2008. In the original Bitcoin paper \cite{nakamoto2008bitcoin}, Nakamoto briefly describes the concepts of the proposed protocol and introduces blockchains as a solution to the apparent double-spending problem. Since Bitcoin is operating entirely on a peer-to-peer basis, a central, monitoring authority, known from services like \textit{Visa} or \textit{Paypal}, does not exist. To still guarantee that the same transaction cannot be sent multiple times and the sender's capital is sufficient, Nakamoto's blockchain operates as a public ledger and stores each successful transaction, marked with a unique ID. By creating this synchronized and chronological order of transaction events, a sender's liquidity can easily be confirmed by traversing the public blockchain history and calculating the result of all previous transactions. \cite{nakamoto2008bitcoin,bitcoinwiki}
 
 \subsection{Transactions}
 Bitcoin wallets and transactions are based on asymmetric cryptography. More specifically, a \textit{wallet} can be described as the collection of a private and a public key \cite{okupski2014bitcoin}. If Alice wants to send a transaction to Bob, she first signs her newly created transaction with the private key of her wallet and specifies the receiver using Bob's public key. By verifying Alice's signature with her public key, Bob is able to proof the authenticity of Alice and the integrity of her transaction. Since Alice's BTC balance isn't represented by a single number, she has to include previous transactions sent to her, as \textit{inputs} to her new transaction to Bob. The values of these input transactions have to sum up to at least the amount of BTC she wants to send to Bob. Since transaction values cannot be divided, Alice can declare her own account as an \textit{output} to her transaction, next to any other receiver, to collect her change. Additional BTCs without corresponding output result in the \textit{transaction fee}, which is used to incentivize miners to include the transaction into their next block. The fee is claimed by the first node incorporating the transaction into the blockchain. The process of using existing transactions as inputs for new transactions leads to the strict distinction between \textit{spent} and \textit{unspent} transaction output (UTXO). The sum of UTXOs therefore determines the current balance of a Bitcoin account.
@@ -142,7 +149,7 @@ In \autoref{fig1}, Alice creates a new transaction and uses two of her accounts 
 Alice sends her new transaction to each of her Bitcoin peers, where it is added to a temporary pool of unverified transactions. Before it is further propagated down the network, Alice's peers verify the new transaction, which includes validation of the UTXOs referenced as inputs and the participating members. After verification, the transaction is added to a pool of valid transactions (\textit{memory pool}) and is sent to the next peers. \cite{antonopoulos2017mastering}
 
 \subsection{Blocks}
-For a transactions to be confirmed and added to the ledger of valid transactions in the blockchain, they first have to be included in a block and the \textit{proof of work} (Section \ref{pow}) has to be calculated. Potential transactions are selected from each node's memory pool, whereas transactions with higher fees are prioritized. The main parts of a Bitcoin block are depicted in \autoref{fig2} and consist of a block \textit{header} and \textit{body}. The block header includes the current Version of the Bitcoin protocol, a timestamp of the block creation, a hash\footnote{More specifically the root of a merkle tree built from all transaction \cite{okupski2014bitcoin}} of this block's body and a double-SHA256 hash of the previous block's header. When a new block is created, the previous block field is set to the hash of the most recent block currently on the blockchain. By inserting its header into the new block, the two blocks can be interlinked and the blockchain extended. This leads to a continuous backwards connection of all blocks up to the \textit{genesis block}. The genesis block is the first block created by Satoshi Nakamoto in 2009 and is statically encoded in the Bitcoin clients software \cite{antonopoulos2017mastering}. Two additional fields, the current mining difficulty and a nonce are used to calculate the proof of work. The block body contains all transactions added to this block, including a \textit{coinbase transaction} which will be redeemed by the first node successfully calculating this block's proof of work. The coinbase transaction contains the sum of all transaction fees included in the block and the current \textit{block reward}. Giving rewards for mining a block is Bitcoin's way of releasing new BTC to the network and providing an incentive for miners to contribute their resources to the system. \cite{okupski2014bitcoin,antonopoulos2017mastering}
+For transactions to be confirmed and added to the ledger of valid transactions in the blockchain, they first have to be included in a block and the \textit{proof of work} (Section \ref{pow}) has to be calculated. Potential transactions for the next block are selected from each node's memory pool, whereas transactions with higher fees are prioritized. The main parts of a Bitcoin block are depicted in \autoref{fig2} and consist of a block \textit{header} and \textit{body}. The block header includes the current Version of the Bitcoin protocol, a timestamp of the block creation, a hash\footnote{More specifically the root of a merkle tree built from all transaction \cite{okupski2014bitcoin}} of this block's body and a double-SHA256 hash of the previous block's header. When a new block is created, the previous block field is set to the hash of the most recent block currently on the blockchain. By inserting this hash into the new block, the two blocks can be interlinked and the blockchain extended. This leads to a continuous backwards connection of all blocks up to the \textit{genesis block}. The genesis block is the first block created by Satoshi Nakamoto in 2009 and is statically encoded in the Bitcoin client's software \cite{antonopoulos2017mastering}. Two additional fields, the current mining difficulty and a nonce are used to calculate the proof of work. The block body contains all transactions added to this block, including a \textit{coinbase transaction} which will be redeemed by the first node successfully calculating this block's proof of work. The coinbase transaction contains the sum of all transaction fees included in the block and the current \textit{block reward}. Giving rewards for mining a block is Bitcoin's way of releasing new BTC to the network and providing an incentive for miners to contribute their resources to the system. \cite{okupski2014bitcoin,antonopoulos2017mastering}
 \begin{figure}[ht]
 	\centering
   \includegraphics[scale=0.7]{BlockExample.png}
@@ -151,19 +158,23 @@ For a transactions to be confirmed and added to the ledger of valid transactions
 \end{figure}
 
 \subsection{Proof of Work} \label{pow}
-To add a block to the blockchain, a valid proof of work has to be calculated, which is also known as \textit{mining} a block. To mine a block, the node (\textit{miner}) repeatedly calculates the double-SHA256 hash of the block's header, while updating the nonce value. The proof of work is treated as valid, once the calculated hash starts with a specific number of zero digits, which is called the \textit{mining difficulty}. Since SHA256 is considered irreversible, brute-forcing the nonce value to generate a new hash each time is the most efficient way of mining a block. The number of required zeros is specified in the block header and increases over time. This is done in order to keep the network from mining more than the intended average of 6 blocks per hour, while hardware and computational power increases. The validity of a block's proof of work can easily be checked by hashing its header once again and testing the result against the target mining difficulty. Since a single node rarely has enough computational power to calculate a valid proof of work in a reasonable time, miners often collude in \textit{mining pools} by sharing any generated block reward based on the amount of hashes calculated by each node. \cite{antonopoulos2017mastering,okupski2014bitcoin}
+To add a block to the blockchain, a valid proof of work has to be calculated, which is also known as \textit{mining} a block. To mine a block, the node (\textit{miner}) repeatedly calculates the double-SHA256 hash of the block's header, while updating the nonce value. The proof of work is treated as valid, once the calculated hash starts with a specific number of zero digits, which is called the \textit{mining difficulty}. Since SHA256 is considered to be irreversible, brute-forcing the nonce value to generate a new hash each time is the most efficient way of mining a block. The number of required zeros is specified in the block header and increases over time. This is done in order to keep the network from mining more than the intended average of 6 blocks per hour, while hardware and computational power increases. The validity of a block's proof of work can easily be verified by hashing its header once again and testing the result against the target mining difficulty. Since a single node rarely has enough computational power to calculate a valid proof of work in a reasonable time, miners often collude in \textit{mining pools} by sharing any generated block reward based on the amount of hashes calculated by each node. \cite{antonopoulos2017mastering,okupski2014bitcoin}
 
 Since every change in the blocks header results in a different hash, calculating the proof of work ensures, that once a block has been added to the blockchain, the block and its transactions can only be modified by recalculating the proof. In fact, each block that was added after the modified block would have to be recalculated as well, since each block contains the hash of its previous block. By changing the hash of a block, the header of the following block would also have to be changed, thereby invalidating its proof of work. \cite{nakamoto2008bitcoin}
 
-Although the modification of a block is computationally challenging, it is theoret confirmations bla standard 6, coinbase 100
-
 \subsection{Peer-to-peer Network}
-After the valid proof of work is computed, the successfully mined block is appended to the local blockchain copy and sent to the miner's peers. Before adding the new block to their own copy of the blockchain and further propagating it in the network, the peers ensure that the block's hash is below the target difficulty and all included transactions are still valid. 
+After the valid proof of work is computed, the successfully mined block is appended to the local blockchain copy and sent to the miner's peers. Before adding the new block to their own copy of the blockchain and further propagating it in the network, the peers ensure that there exists a hash of any valid or stale block on their blockchain that corresponds to the hash specified in the new block's header. Blocks without a known parent are called \textit{orphaned blocks}\footnote{In literature oprhaned blocks are sometimes used as a term for valid blocks, that are no longer part of the main chain after a fork. According to \cite{staleblocks}, we will refer to these blocks as stale blocks instead.} and are temporarily stored since the missing parent block might be transmitted in the future. If the new block does reference an existing node in the blockchain, contains only valid transactions and satisfies the current mining difficulty with its proof of work, the block is appended to the correct parent in the local blockchain and sent to the next peers. 
 
 Because Bitcoin operates on a peer-to-peer basis, latencies in the network are unavoidable. According to \cite{infoprop}, the mean time until a
-node receives a new block is 12.6 seconds, while approximately 5\% of nodes still have not received the block after 40 seconds. Since a new Bitcoin block is created \textit{on average} every 10 minutes, it is possible that two miners find the solutions to two different blocks at roughly the same time, thereby creating a \textit{fork} of the blockchain (Figure ?). This results in a situation, in which the local blockchain copies of some peers are no longer synchronized. To resolve this conflict and to regain consensus between nodes, a simple rule is employed. According to the bitcoin protocol, nodes are always mining on the blockchain containing the most proof of work, which more or less corresponds to the fork with the highest number of blocks. If two forks containing the same amount of blocks are available, miners are encouraged to work on the fork they received first. This ensures, that even if there are two versions of the blockchain with the same length, nodes will keep mining on any of the two forks until a new block is found. By appending the new block to one of the forks, the contained proof of work increases and miners working on the other fork will switch to the longer chain, thereby resolving the race. Subsequently, the block of the losing fork is invalidated and its transactions are released back into the network. These blocks are known as \textit{stale}\footnote{In literature sometimes referred to as orphaned block, which is a term we will use for blocks without a valid parent block instead. \cite{staleblocks}} blocks. \cite{okupski2014bitcoin}
+node receives a new block is 12.6 seconds, while approximately 5\% of nodes still have not received the block after 40 seconds. Since a new Bitcoin block is created \textit{on average} every 10 minutes, it is possible that two miners find solutions to two different blocks at roughly the same time, thereby creating a \textit{fork} of the blockchain (\autoref{blockchainfork}). This results in a situation, in which the local blockchain copies of some peers are no longer synchronized. To resolve this conflict and to regain consensus between nodes, a simple rule is employed. According to the bitcoin protocol, nodes are always mining on the blockchain containing the most proof of work, which more or less corresponds to the fork with the highest number of blocks. If two forks containing the same amount of blocks are available, miners are encouraged to work on the fork they received first. This ensures, that even if there are two versions of the blockchain with the same length, nodes will keep mining on any of the two forks until a new block is found. By appending the new block to one of the forks, the contained proof of work increases and miners working on the other fork will switch to the longer chain, thereby resolving the race. Subsequently, the blocks of the losing fork are invalidated and their transactions are released back into the network. These blocks are known as \textit{stale} blocks. \cite{okupski2014bitcoin}
+\begin{figure}[ht]
+	\centering
+  \includegraphics[width=\textwidth]{BlockchainFork.png}
+	\caption{Blockchain with two stale branches (gray) forking from the valid chain (blue) }
+	\label{blockchainfork}
+\end{figure}
 
-To avoid problems with invalidated blocks and transactions due to these kind of races and attacks similar to the one presented in Section \ref{pow}, Bitcoin introduced the concept of \textit{confirmations}. If Alice's transaction is validated and successfully mined into a block on the blockchain, it receives \textit{one} confirmation. For each additional block mined onto the chain after the block containing Alice's transaction, it receives another confirmation. Consequently, the number of confirmations corresponds to the number of blocks that would have to turn stale, or have to be recalculated, in order to invalidate Alice's transaction. Over the history of Bitcoin, the number of six confirmations has been widely accepted as a common standard, but since waiting for six confirmations means waiting approximately one hour for the transaction to be valid, a lot of services operate on only a few, or even no confirmations, which can lead to several problems further described by \cite{premining1}.
+To avoid problems with invalidated blocks and transactions due to these kinds of races and attacks similar to the one presented in Section \ref{pow}, Bitcoin introduced the concept of \textit{confirmations}. If Alice's transaction is validated and successfully mined into a block on the blockchain, it receives \textit{one} confirmation. For each additional block mined onto the chain after the block containing Alice's transaction, it receives another confirmation. Consequently, the number of confirmations corresponds to the number of blocks that would have to turn stale, or have to be recalculated, in order to invalidate Alice's transaction. Over the history of Bitcoin, the number of six confirmations has been widely accepted as a common standard, but since waiting for six confirmations means waiting approximately one hour for the transaction to be valid, a lot of services operate on only a few, or even no confirmations, which can lead to several problems further described by \cite{premining1}. In comparison, coinbase transactions to reward the miner of a new block, are considered to be valid only after they have been confirmed by a total of 100 mined blocks. \cite{antonopoulos2017mastering}
 
 \section{Double-spend Attacks}
 In \cite{nakamoto2008bitcoin}, Nakamoto claims to have solved the double-spending problem with his proposal of the Bitcoin protocol. Nevertheless, attacks on Nakamoto's blockchain architecture to generate double-spending transactions are still possible and can be described as a series of events:
@@ -180,16 +191,14 @@ In \cite{nakamoto2008bitcoin}, Nakamoto claims to have solved the double-spendin
 \item \textit{A} releases her now longer branch, thereby invalidating each block of the honest branch, including the block containing \textbf{T\textsubscript{M}}.
 \item All nodes start mining on the longer branch. Since \textbf{T\textsubscript{A}} is now part of the valid blockchain, \textit{A} gets to keep M's payment and the delivered product.
 \end{enumerate}
-For this attack to succeed, \textit{A} needs to mine blocks onto the secret blockchain branch faster than the remaining network confirming the transaction to the merchant. This requires a substantial amount of hashing power, arguably the majority of the network, to be consistently successful, but is always possible even with less hashing power at the cost of an increasing amount of failed attempts. \cite{HBDSA,DSAwithTime}
-
-Figures: Blockchain with parent arrows, blockchain with branches, visualization of DSA
+For this attack to succeed, \textit{A} needs to mine blocks onto the secret blockchain branch faster than the remaining network confirming the transaction to the merchant. According to \cite{nakamoto2008bitcoin}, consistently winning this race requires the majority of hashinpower in the network. Nevertheless, this attack is always possible, even with less hashing power, at the cost of an increasing amount of failed attempts. \cite{HBDSA,DSAwithTime}
 
 
 %------- chapter 3 -------
 
 \chapter{Related Work}
 \section{Hashrate-based Models for Double-Spend Attacks}
-Potential attacks on blockchains, especially the Bitcoin protocol, have been conceptualized since the release of Nakamoto's original Bitcoin paper \cite{nakamoto2008bitcoin}. In chapter 11 of his proposal, Nakamoto formulates the first mathematical model to calculate the theoretical probability of successful double-spend attacks on his protocol. This model has since been improved and adapted several times, while similar, independent models have been formulated as well \cite{HBDSA,DSAwithTime,NakamotoDSACorrection,NakamotoExplMCSim}. Similar to \cite{DSAwithTime}, we will call the collection of these approaches \textit{hashrate-based} attack models. The central premise of a hashrate-based model is splitting the total computing power available to the network (hashrate \textit{H}), into two parts. To achieve this, \cite{HBDSA} defines \textit{pH} as the hashrate controlled by honest nodes adhering to the protocol, while \textit{qH} is used by malicious nodes trying to attack. Since also
+Potential attacks on blockchains, especially the Bitcoin protocol, have been conceptualized since the release of Nakamoto's original Bitcoin paper \cite{nakamoto2008bitcoin}. In chapter 11 of his proposal, Nakamoto formulates the first mathematical model to calculate the theoretical probability of successful double-spend attacks on his protocol. This model has since been improved and adapted several times, while similar, independent models have been formulated as well \cite{HBDSA,DSAwithTime,NakamotoDSACorrection,NakamotoExplMCSim}. Similar to \cite{DSAwithTime}, we will call the collection of these approaches \textit{hashrate-based} attack models. The central premise of a hashrate-based model is splitting the total computing power available to the network (hashrate \textit{H}), into two parts. To achieve this, \cite{HBDSA} defines \textit{pH} as the hashrate controlled by honest nodes adhering to the protocol, while \textit{qH} is used by malicious nodes trying to attack the blockchain. Since also
 \begin{subequations}
 \renewcommand{\theequation}{\theparentequation.\arabic{equation}}
 \begin{align}
@@ -207,7 +216,7 @@ It is interesting to note that all of the before mentioned models produce simila
 \end{itemize}
 \section{Simulations}
 An important remark can be seen in the fact that none of the before mentioned hashrate-based models have been confirmed or supported by experimental data or tests in an exhaustive and realistic way. Instead, the validity of these models relies mostly on mathematical proofs and expertise, or the comparison with other, similar models. Nevertheless, one exception can be made with \cite{NakamotoExplMCSim}. After presenting a detailed explanation of Nakamoto's model for double-spends, the author validates the mathematical approach by performing a Monte Carlo simulation \cite{montecarlo} with different sets of input. In the light of this, the author identifies an error of the model, which is linked to its use of the poisson distribution. In spite of this success, the Monte Carlo simulation is missing parameters of a real blockchain protocol and ``does not actually
-mine coin, it simply flips some coins to see whether each miner wins a block as simulated'' \cite{NakamotoExplMCSim}. A more realistic simulation of a different attack on Bitcoin blockchains, the selfish-mine attack, is presented by \cite{mwalemodel}. In this model of the Bitcoin protocol, random (\textit{x}, \textit{y})-coordinates of a two dimensional plane are assigned to each node in order to create a simple network topology. By simulating the latency between two nodes as proportional to their euclidean distance in the plane, \cite{mwalemodel} successfully models block propagation times of a real network. During the simulation, new blocks are again generated as instances of a poisson process with an average rate of ten minutes. 
+mine coin, it simply flips some coins to see whether each miner wins a block as simulated'' \cite{NakamotoExplMCSim}. A more realistic simulation of a different attack on Bitcoin blockchains, the selfish-mine attack, is presented by \cite{mwalemodel}. In this model of the Bitcoin protocol, random (\textit{x}, \textit{y})-coordinates of a two dimensional plane are assigned to each node, in order to create a simple network topology. By simulating the latency between two nodes as proportional to their euclidean distance in the plane, \cite{mwalemodel} successfully models block propagation times of a real network. During the simulation, new blocks are again generated as instances of a poisson process with an average rate of ten minutes. 
 \section{Other Attacks}
 Next to double-spend atttacks, a wide variety of different attacks against blockchains and the Bitcoin protocol have been conceptualized. The already mentioned \textit{selfish-mine attack}, or \textit{block-discarding attack}, focuses on invalidating the honest miners' work, by selectively publishing premined blocks to the network. \cite{mwalemodel,selfishmine1,selfishmine2,lessThanHalfDraft}. According to \cite{lessThanHalfDraft} and \cite{selfishmine1} this attack can succeed with a fraction of 25\% total hashing power controlled by the attacker. The \textit{whale attack} presented by \cite{whaleattack} aims to increase an attackers chances of successful double-spends by publishing transactions with large mining fees, to incentivize honest miners to build on a fraudulent blockchain fork. \cite{premining1} and \cite{premining2} further capitalize on the \textit{premining} strategy of secretly mining blocks ahead of the honest blockchain, while also including a reversed transaction to the target. Once the attacker has gained a comfortable lead, the original transaction to the target merchant is released. Now the lead of the attackers' fork only has to be maintained until the transaction has been confirmed in order to perform a double-spend. The authors demonstrate how this attack can be used to increase the probability of double-spend attacks, when timing of the transaction used as bait is not important.
 \section{Contribution}
@@ -225,13 +234,78 @@ Using these parameters and the simulator framework, we will then propose our own
 
 \chapter{Approach}
 
-\section{Requirements}
+\section{Simulation Framework}
+The core part of the simulator represents an abstracted framework for blockchain architectures. Compared to the example blockchain protocol presented by Bitcoin, a few adaptations have been made 
+\begin{itemize}
+\item nodes send their entire version of the blockchain
+\item blockchain represented by its length
+\item not transactions or blocks
+\item nodes start mining on received blockchain if it is longer than the blockchain currently being mined on
+\item generating random numbers instead of increment nonce + hash
+\end{itemize}
+\subsection{Classes}
+\begin{figure}[ht]
+	\centering
+  \includegraphics[width=\textwidth]{Framework.png}
+	\caption{Class diagram of the blockchain simulation framework}
+	\label{framework}
+\end{figure}
 
-\section{Overview}
+\subsubsection{Node}
+The node represents a basic implementation of a honest miner adhering to the blockchain protocol. Each node contains a reference to every other node in the network using the peer class. Once a new block is mined, it is added to the local blockchain and, after the corresponding latency, a copy of the blockchain is sent to all peers. The node will only start mining on a newly received blockchain, if it is longer than the local blockchain copy. To simplify execution of multiple simulation runs, each node can be reset to their initial state. To allow simulation of nodes diverging from the standard protocol, the class contains three abstract methods which can be implemented to alter the behavior of the node. 
 
-\section{Design Goals}
+\subsubsection{Peer}
+To represent the connection to a node in the network, the peer implements a simple data class, containing the latency time in milliseconds needed to reach the referenced node.
 
-\section{Subsystem Decomposition}
+\subsubsection{Blockchain}
+In order to allow concrete implementations of different blockchain models, the blockchain class only provides the abstracted interface required by nodes. An implementation of the blockchain class therefore contains routines for adding a block and returning the length of the blockchain. Since nodes propagate whole copies of the blockchain instead of single blocks, a method of copying the blockchain has to be implemented as well.
+
+\subsubsection{Network}
+The network acts as a central controller of the blockchain framework. It maintains references to all nodes in the network and provides simple routines for starting and stopping the mining process of all nodes in a synchronized manner. Once the network is started, the calling thread of \textit{run()} is blocked, until the execution of all nodes is completed. The nodes terminate their mining threads after the network is stopped, which is ideally done as a consequence of some end condition reached by the simulation.
+
+
+\subsection{Creating the Peer-to-peer Network}
+Strategy pattern
+\begin{figure}[ht]
+	\centering
+  \includegraphics[width=\textwidth]{PeerStrategy.png}
+	\caption{Class diagram of the different strategies available to connect nodes in the peer-to-peer network}
+	\label{peerstrategy}
+\end{figure}
+\subsubsection{ConstantPeerStrategy}
+\subsubsection{EuclideanPeerStrategy}
+\subsubsection{AdjMatrixPeerStrategy}
+\subsubsection{BoolMatrixPeerStrategy}
+\subsubsection{RndGraphPeerStrategy}
+
+
+\section{Double-Spend Simulation}
+
+\subsection{Classes}
+\begin{figure}[ht]
+	\centering
+  \includegraphics[width=\textwidth]{Simulation.png}
+	\caption{Class diagram of the double-spend simulation}
+	\label{simulation}
+\end{figure}
+\subsubsection{DSSimulation}
+\subsubsection{DSBlockchain}
+Despite blockchain only represented by number of blocks not actual blocks,no distinction between stale main orphaned blocks, effect of stale blocks and branches still exist
+\subsubsection{TrustedNode}
+\subsubsection{AttackerNode}
+\subsubsection{ConnectionStrategy}
+
+\section{Activity}
+\begin{figure}[ht]
+	\centering
+  \includegraphics[width=\textwidth]{Activity1.png}
+	\caption{Activity diagram of the double-spend simulation}
+	\label{activity1}
+\end{figure}
+
+\section{Using the Simulator}
+Parameters, ParametersBuilder, Property file, randomization, 
+
 
 
 %------- chapter 5 -------
@@ -270,7 +344,10 @@ Using these parameters and the simulator framework, we will then propose our own
 \subsection{Realized Goals}
 
 \subsection{Open Goals}
-
+\begin{itemize}
+\item All attacking Nodes have equal, constant latency to each trusted node
+\item Network creation not perfectly random
+\end{itemize}
 \section{Conclusion}
 
 \section{Future Work}
@@ -279,6 +356,7 @@ Using these parameters and the simulator framework, we will then propose our own
 \item implement other attacks mentioned in related work on blockchains using framework
 \item identify missing parameters
 \item conduct more tests
+\item using result: economics of dsa?
 \end{itemize}
 
 
