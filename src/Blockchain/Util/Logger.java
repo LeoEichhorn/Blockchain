@@ -16,4 +16,11 @@ public class Logger {
         if(level.intValue() <= msgLevel.intValue())
             System.out.println(msg);
     }
+    
+    public static void err(Level msgLevel, String msg){
+        if(msgLevel == Level.SEVERE)
+            System.err.printf("[ERROR] %s\n", msg);
+        else
+            System.err.printf("[WARNING] %s\n", msg);
+    }
 }

@@ -10,7 +10,7 @@ public class ORNode extends Node{
     private ORManager orm;
     
     public ORNode(ORManager orm, Network network, Parameters p, String name) {
-        super(network, new Blockchain(p.getDifficulty()), name);
+        super(network, new ORBlockchain(p.getDifficulty()), name);
         this.orm = orm;
     }
     

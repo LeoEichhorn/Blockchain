@@ -7,6 +7,7 @@ import Blockchain.Node;
  * Implementation of a Blockchain used to simulate Double Spend attacks.
  */
 public class DSBlockchain extends Blockchain{
+    private int length;
     private boolean infested;
     
     public DSBlockchain(double difficulty, boolean infested) {
@@ -14,7 +15,8 @@ public class DSBlockchain extends Blockchain{
     }
     
     public DSBlockchain(int length, double difficulty, boolean infested) {
-        super(length, difficulty);
+        super(difficulty);
+        this.length = length;
         this.infested = infested;
     }
     
@@ -25,8 +27,18 @@ public class DSBlockchain extends Blockchain{
     
     @Override
     public void reset(Node owner) {
-        super.reset(owner);
+        length = 0;
         infested = owner instanceof AttackerNode;
+    }
+    
+    @Override
+    public void addBlock()  {
+        length++;
+    }
+    
+    @Override
+    public int getLength() {
+        return length;
     }
     
     /**
@@ -41,5 +53,5 @@ public class DSBlockchain extends Blockchain{
     @Override
     public String toString() {
         return String.format("[%d; %s]", length, infested?"infested":"safe");
-    }
+    } 
 }

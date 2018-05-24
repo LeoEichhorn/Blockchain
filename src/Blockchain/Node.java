@@ -74,16 +74,19 @@ public abstract class Node {
      * Starts this Node's mining thread.
      */
     public void startMining() {
-        miningThread.start();
+        if(miningThread != null)
+            miningThread.start();
     }
     
     /**
      * Joins this node's mining thread.
      */
     public final void join() {
-        try{
-            miningThread.join();
-        }catch(InterruptedException e){}    
+        if(miningThread != null){
+            try{
+                miningThread.join();
+            }catch(InterruptedException e){}    
+        }
     }
     
     /**
