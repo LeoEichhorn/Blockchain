@@ -21,6 +21,8 @@
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
 \usepackage{listings}
 \usepackage[utf8]{inputenc}
 \usepackage[capitalize, noabbrev]{cleveref}
@@ -43,8 +45,8 @@
 
 
 \hypersetup{pdfborder={0 0 0},
-                        pdfauthor={<author>},
-                        pdftitle={<title english>},
+                        pdfauthor={Leo Eichhorn},
+                        pdftitle={Simulation-Based Analysis of Blockchain Architectures},
                         }
 
 \lstset{showspaces=false, numbers=left, frame=single, basicstyle=\small}
@@ -98,7 +100,11 @@
 
 \begin{acronym}
 \acro{RADS}{Resistance of a blockchain architecture against double spend attacks}
-
+\acro{UTXO}{Bitcoin unspent transaction output}
+\acro{APSP}{All pairs shortest path problem}
+\acro{BTC}{The Bitcoin currency}
+\acro{PoW}{Proof of work}
+\acro{DSA}{Double-spend attack}
 \end{acronym}
 
 \pagenumbering{arabic}
@@ -130,7 +136,7 @@ A blockchain is a public\footnote{In this thesis, only permissionless blockchain
 	\label{blockchain}
 \end{figure}
  
-\section{Bitcoin}
+\section{Bitcoin} \label{bitcoin}
 To gain a better understanding of the blockchain technology and dynamics in a blockchain network, we will provide a short summary of Bitcoin as a concrete example of application. For a more detailed description of the Bitcoin protocol, refer to \cite{nakamoto2008bitcoin,antonopoulos2017mastering,okupski2014bitcoin}.
 
  Bitcoin is a decentralized digital cryptocurrency created by Satoshi Nakamoto in 2008. In the original Bitcoin paper \cite{nakamoto2008bitcoin}, Nakamoto briefly describes the concepts of the proposed protocol and introduces blockchains as a solution to the apparent double-spending problem. Since Bitcoin is operating entirely on a peer-to-peer basis, a central, monitoring authority, known from services like \textit{Visa} or \textit{Paypal}, does not exist. To still guarantee that the same transaction cannot be sent multiple times and the sender's capital is sufficient, Nakamoto's blockchain operates as a public ledger and stores each successful transaction, marked with a unique ID. By creating this synchronized and chronological order of transaction events, a sender's liquidity can easily be confirmed by traversing the public blockchain history and calculating the result of all previous transactions. \cite{nakamoto2008bitcoin,bitcoinwiki}
@@ -199,12 +205,9 @@ For this attack to succeed, \textit{A} needs to mine blocks onto the secret bloc
 \chapter{Related Work}
 \section{Hashrate-based Models for Double-Spend Attacks}
 Potential attacks on blockchains, especially the Bitcoin protocol, have been conceptualized since the release of Nakamoto's original Bitcoin paper \cite{nakamoto2008bitcoin}. In chapter 11 of his proposal, Nakamoto formulates the first mathematical model to calculate the theoretical probability of successful double-spend attacks on his protocol. This model has since been improved and adapted several times, while similar, independent models have been formulated as well \cite{HBDSA,DSAwithTime,NakamotoDSACorrection,NakamotoExplMCSim}. Similar to \cite{DSAwithTime}, we will call the collection of these approaches \textit{hashrate-based} attack models. The central premise of a hashrate-based model is splitting the total computing power available to the network (hashrate \textit{H}), into two parts. To achieve this, \cite{HBDSA} defines \textit{pH} as the hashrate controlled by honest nodes adhering to the protocol, while \textit{qH} is used by malicious nodes trying to attack the blockchain. Since also
-\begin{subequations}
-\renewcommand{\theequation}{\theparentequation.\arabic{equation}}
-\begin{align}
-p + q & = 1
-\end{align}
-\end{subequations}
+\begin{equation}
+p + q = 1
+\end{equation}
 it can easily be seen that \textit{p} and \textit{q} are precisely the probabilities of the next block being mined by either the honest or the attacking part of the network. Using an adaptation of the Gambler's Ruin problem \cite{gamblersruin}, Nakamoto and \cite{HBDSA} are now calculating the probability \textit{Q\textsubscript{z}} of an attacker successfully catching up with their fork of the blockchain, asuming they are at a total deficit of \textit{z} blocks compared to the honest nodes. The success of a potential double-spend attack against a merchant waiting for \textit{n} confirmations can now be formulated as the probability of \textit{Q\textsubscript{z}}, after \textit{n} blocks have been mined by the honest network. While \cite{nakamoto2008bitcoin} is using a poisson distribution in his formula, \cite{HBDSA} is achieving similar results with a negative binomial distribution. Combined with \cite{NakamotoDSACorrection}, the author of \cite{HBDSA} is also pointing out and correcting an of-by-one error introduced by Nakamoto, who is only calculating the probability of an attacker \textit{catching up} with his fraudulent blockchain fork, while for the double spend attack to be successful, the length of the honest chain has to be \textit{surpassed}. \cite{DSAwithTime} presents two similar approaches but considers partial advancement towards block creation as well. The author's first model extends the hashrate-based model formulated by \cite{HBDSA} and includes an additional parameter, indicating the time an attacker has already spent mining on blocks. The second model is fundamentally based on the time differences at which honest and attacking nodes have mined their last block, but is also relying on hashrates as a measure of computational power.
 It is interesting to note that all of the before mentioned models produce similar results, despite the differences in their calculations. Therefore it is less surprising that the authors seem to agree on their general conclusions as well. Those can be summarized as follows:
 \begin{itemize}
@@ -235,13 +238,15 @@ Using these parameters and the simulator framework, we will then propose our own
 \chapter{Approach}
 
 \section{Simulation Framework}
-The core part of the simulator represents an abstracted framework for blockchain architectures. Compared to the example blockchain protocol presented by Bitcoin, a few adaptations have been made 
+To simplify future implementation of simulations for other attacks on block-chains, the core part of our simulator represents an extensible, abstracted framework for general blockchain architectures. By subclassing the existing elements of the framework, the simulator's functionality can be extended and customized, in order to model specific blockchain dynamics. Compared to the example blockchain protocol presented in Section \ref{bitcoin}, a few adaptations have been made:
 \begin{itemize}
-\item nodes send their entire version of the blockchain
-\item blockchain represented by its length
-\item not transactions or blocks
-\item nodes start mining on received blockchain if it is longer than the blockchain currently being mined on
-\item generating random numbers instead of increment nonce + hash
+\item Every node of the network is a miner.
+\item Each miner is represented by a single program thread.
+\item Instead of hashing a block and updating nonce values, mining a block consists of repeatedly generating random numbers until a number lower than the target difficulty is found.
+\item The framework does not include generation and transmission of transactions, since the data contained inside the blocks is not relevant to our investigations.
+\item Instead of sending single blocks, miners propagate whole copies of their local blockchains along the network.
+\item Nodes start mining on a received blockchain if it is longer than the blockchain currently being mined on.
+\item Latency time between two peers is constant and symmetric.
 \end{itemize}
 \subsection{Classes}
 \begin{figure}[ht]
@@ -252,7 +257,7 @@ The core part of the simulator represents an abstracted framework for blockchain
 \end{figure}
 
 \subsubsection{Node}
-The node represents a basic implementation of a honest miner adhering to the blockchain protocol. Each node contains a reference to every other node in the network using the peer class. Once a new block is mined, it is added to the local blockchain and, after the corresponding latency, a copy of the blockchain is sent to all peers. The node will only start mining on a newly received blockchain, if it is longer than the local blockchain copy. To simplify execution of multiple simulation runs, each node can be reset to their initial state. To allow simulation of nodes diverging from the standard protocol, the class contains three abstract methods which can be implemented to alter the behavior of the node. 
+The node represents a basic implementation of a honest miner adhering to our blockchain protocol. Each node contains a reference to every other node in the network using the peer class. Once a new block is mined, it is added to the local blockchain and, after the corresponding latency times, a copy of the blockchain is sent to all peers. The node will only start mining on a newly received blockchain if it is longer than the local blockchain copy. To simplify execution of multiple simulation runs, each node can be reset to their initial state. To allow simulation of nodes diverging from the standard protocol, the class contains three abstract methods which can be implemented to alter the behavior of the node. 
 
 \subsubsection{Peer}
 To represent the connection to a node in the network, the peer implements a simple data class, containing the latency time in milliseconds needed to reach the referenced node.
@@ -261,11 +266,11 @@ To represent the connection to a node in the network, the peer implements a simp
 In order to allow concrete implementations of different blockchain models, the blockchain class only provides the abstracted interface required by nodes. An implementation of the blockchain class therefore contains routines for adding a block and returning the length of the blockchain. Since nodes propagate whole copies of the blockchain instead of single blocks, a method of copying the blockchain has to be implemented as well.
 
 \subsubsection{Network}
-The network acts as a central controller of the blockchain framework. It maintains references to all nodes in the network and provides simple routines for starting and stopping the mining process of all nodes in a synchronized manner. Once the network is started, the calling thread of \textit{run()} is blocked, until the execution of all nodes is completed. The nodes terminate their mining threads after the network is stopped, which is ideally done as a consequence of some end condition reached by the simulation.
+The network acts as a central controller of the blockchain framework. It maintains references to all nodes in the network and provides simple routines for starting and stopping the mining processes of all nodes in a synchronized manner. Once the network is started, the calling thread of \textit{run()} is blocked until the execution of all nodes is completed. The nodes terminate their mining threads after the network is stopped, which is ideally done as a consequence of some end condition reached by the simulation.
 
 
 \subsection{Creating the Peer-to-peer Network}
-Strategy pattern
+Apart from simulating blockchains and miners, the simulator framework requires additional functionality to model different forms of peer-to-peer networks. The general task is to create a connected graph of all nodes, whereas edges and edge weights represent the latency times between two nodes. Using the strategy pattern\cite{strategy}, the simulator framework provides implementations of five different ways of modeling the network (\autoref{peerstrategy}), while additional strategies can easily be added in the future. The different peer strategies are used by instantiating the specific strategy and calling the \textit{connectPeers()} method using a list of all nodes in the network. The strategy will then populate the peer lists of each node accordingly. In the following an overview of the available strategies will be provided.
 \begin{figure}[ht]
 	\centering
   \includegraphics[width=\textwidth]{PeerStrategy.png}
@@ -273,14 +278,53 @@ Strategy pattern
 	\label{peerstrategy}
 \end{figure}
 \subsubsection{ConstantPeerStrategy}
+All nodes in the network are connected by symmetric latencies $l$, sampled from a normal distribution with constant mean $m$. The standard deviation is calculated using a constant deviation factor $c$ and the mean.
+\begin{equation}\label{distribution} 
+l\in L\sim cmN(0,1)+m = N(m,c^{2}m^{2})
+\end{equation}
 \subsubsection{EuclideanPeerStrategy}
+Similar to the model presented by \cite{mwalemodel}, all Nodes are assigned random coordinates $(x,y)$ in a two dimensional plane. The latency between two Nodes $p$ and $q$ is sampled from a normal distribution whose mean $m$ is equal to the nodes' euclidean distance.
+\begin{equation}\label{euclid}
+m = \sqrt{(p_{x}-q_{x})^{2}+(p_{y}-q_{y})^{2}}
+\end{equation}
+The standard deviation is calculated as shown in formula \ref{distribution}. By setting the strategy's \textit{width} and \textit{height} parameters, the area of the two dimensional plane can be defined. Creating a bigger plane therefore leads to overall higher latencies in the network.
 \subsubsection{AdjMatrixPeerStrategy}
+This strategy creates a graph of nodes according to a given adjacency matrix. Latencies between two nodes are represented by the matrix entries, whose indices refer to the corresponding nodes in the provided list. Negative entries indicate that there is no connection between two nodes, whereas a value of zero leads to a connection without latency. Choosing the entry values allows simulation of typical network topologies like stars and rings. After creating the graph, Dijkstra's shortest path algorithm\cite{dijkstra} is used to solve the all pairs shortest path (APSP) problem. With the resulting distance matrix, all peers of each node can be initialized.
 \subsubsection{BoolMatrixPeerStrategy}
+Similar to the previous strategy, a graph is created as specified by the given adjacency matrix. This time, positive entries of the matrix only indicate existence of a connection between two nodes, whereas negative and zero values lead to no connection in the graph. The latencies are instead sampled from a normal distribution with constant mean and standard deviation as defined by formula \ref{distribution}.
 \subsubsection{RndGraphPeerStrategy}
+This strategy generates a pseudo-random graph with a given number of nodes and edges. To avoid the infinite scale of a parameter defining the number of edges, the graph density $d$ is used instead. Since the generated graph has to be connected, the number of edges $e$ is calculated from $d$ and the number of nodes $n$ as shown in equation \ref{dens}. 
+\begin{equation}\label{dens}
+e = max \left( d\frac{n\left( n-1\right) }{2}, n-1 \right), d\in [0,1]
+\end{equation}
+It is important to note, that the created graph is not entirely random, as Algorithm \ref{rndgraph} introduces a bias by always selecting a visited node for one end of a new edge. Since for each iteration, only visited nodes are considered, earlier nodes are more likely to receive a higher degree.\cite{stackoverflow} 
 
+Edge weights of the graph corresponding to the latency between two nodes are sampled according to formula \ref{distribution}. The distances between all nodes used to initialize each node's peers are again calculated by Dijkstra's APSP algorithm. 
+\begin{algorithm}
+\caption{Creates a pseudo-random graph with the given number of nodes and edges}\label{rndgraph}
+\begin{algorithmic}[1]
+\Procedure{RndGraph}{nodes, edges}
+\State $\textit{G} \gets \textit{(V, E)}$
+\State $i \gets 0$
+\State $V \cup \{i \}$
+\While {$++i < \textit{nodes}$}
+\State $u \gets \textit{rndElement(V)}$
+\State $V \cup \{i \}$
+\State $E \cup \{(i,u),(u,i) \}$
+\EndWhile
+\State $e \gets edges - (nodes-1)$
+\While {$e-- > 0$}
+\State $E' \gets \textit{missingEdges(G)}$
+\State $(x,y) \gets \textit{rndElement(E')}$
+\State $E \cup \{(x,y),(y,x) \}$
+\EndWhile
+\State \Return $G$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
 
 \section{Double-Spend Simulation}
-
+general idea, one run try for double spend, multiple runs for ratio. 
 \subsection{Classes}
 \begin{figure}[ht]
 	\centering
@@ -289,13 +333,19 @@ Strategy pattern
 	\label{simulation}
 \end{figure}
 \subsubsection{DSSimulation}
+initialises all nodes, network. creates peer graph every run if enabled. 
 \subsubsection{DSBlockchain}
-Despite blockchain only represented by number of blocks not actual blocks,no distinction between stale main orphaned blocks, effect of stale blocks and branches still exist
+The blockchain used to simulate double-spend attacks.  It is important to note, that despite not explicitly distinguishing between stale and valid blocks by representing the blockchain only by its length, the effect of stale blocks and branches still exists in the network. Imagine the current consensus in the network to be a blockchain of length 3. If now two nodes mine a new block at approximately the same time, both send blockchains of length 4 to every peer. In the original protocol there would be two different blockchains of length 4 spread across the network, but using our model they are indistinguishable. Nevertheless the nodes of our network simulation still experience one wasted, stale block since they mined a total of two blocks, but were only able to increase the length of the consented blockchain by one.
+\subsubsection{DSManager}
+Collects data sent from every node, keeps track of double spend progress, longest attacker \& trusted chain, success if all trusted nodes infested, failure if max length or max lead, once end condition reached reports completion to dssimulation
 \subsubsection{TrustedNode}
+atackers only sending infested blockchain to trusted nodes once trusted blockchain is confirmed, simulated by trusted nodes only accepting infested chains once confirmed. report new block to manager, depending on infested status adds progress to attacker or trusted. gets infected if previously mining on trusted chain, now on infected chain and vise verca. 
 \subsubsection{AttackerNode}
+reports each new block to manager, only accepts infested blockchains (containing fradulent transaction)
 \subsubsection{ConnectionStrategy}
+aquivalent to peerstrategy but allows connecting to sets of nodes with each other. currently only implementation: constant latency of each attacker node with each trusted node see formula
 
-\section{Activity}
+\subsection{Activity}
 \begin{figure}[ht]
 	\centering
   \includegraphics[width=\textwidth]{Activity1.png}
