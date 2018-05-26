@@ -182,7 +182,7 @@ node receives a new block is 12.6 seconds, while approximately 5\% of nodes stil
 
 To avoid problems with invalidated blocks and transactions due to these kinds of races and attacks similar to the one presented in Section \ref{pow}, Bitcoin introduced the concept of \textit{confirmations}. If Alice's transaction is validated and successfully mined into a block on the blockchain, it receives \textit{one} confirmation. For each additional block mined onto the chain after the block containing Alice's transaction, it receives another confirmation. Consequently, the number of confirmations corresponds to the number of blocks that would have to turn stale, or have to be recalculated, in order to invalidate Alice's transaction. Over the history of Bitcoin, the number of six confirmations has been widely accepted as a common standard, but since waiting for six confirmations means waiting approximately one hour for the transaction to be valid, a lot of services operate on only a few, or even no confirmations, which can lead to several problems further described by \cite{premining1}. In comparison, coinbase transactions to reward the miner of a new block, are considered to be valid only after they have been confirmed by a total of 100 mined blocks. \cite{antonopoulos2017mastering}
 
-\section{Double-spend Attacks}
+\section{Double-spend Attacks} \label{dsa}
 In \cite{nakamoto2008bitcoin}, Nakamoto claims to have solved the double-spending problem with his proposal of the Bitcoin protocol. Nevertheless, attacks on Nakamoto's blockchain architecture to generate double-spending transactions are still possible and can be described as a series of events:
 \begin{enumerate}
 \item An attacker \textit{A} would like to receive a service or product from a target merchant \textit{M}.
@@ -238,7 +238,7 @@ Using these parameters and the simulator framework, we will then propose our own
 \chapter{Approach}
 
 \section{Simulation Framework}
-To simplify future implementation of simulations for other attacks on block-chains, the core part of our simulator represents an extensible, abstracted framework for general blockchain architectures. By subclassing the existing elements of the framework, the simulator's functionality can be extended and customized, in order to model specific blockchain dynamics. Compared to the example blockchain protocol presented in Section \ref{bitcoin}, a few adaptations have been made:
+To simplify future implementation and simulation of other attacks on block-chains, the core part of our simulator represents an extensible, abstracted framework for general blockchain architectures. By subclassing the existing elements of the framework, the simulator's functionality can be extended and customized, in order to model specific blockchain dynamics. Compared to the example blockchain protocol presented in Section \ref{bitcoin}, a few adaptations have been made:
 \begin{itemize}
 \item Every node of the network is a miner.
 \item Each miner is represented by a single program thread.
@@ -260,7 +260,7 @@ To simplify future implementation of simulations for other attacks on block-chai
 The node represents a basic implementation of a honest miner adhering to our blockchain protocol. Each node contains a reference to every other node in the network using the peer class. Once a new block is mined, it is added to the local blockchain and, after the corresponding latency times, a copy of the blockchain is sent to all peers. The node will only start mining on a newly received blockchain if it is longer than the local blockchain copy. To simplify execution of multiple simulation runs, each node can be reset to their initial state. To allow simulation of nodes diverging from the standard protocol, the class contains three abstract methods which can be implemented to alter the behavior of the node. 
 
 \subsubsection{Peer}
-To represent the connection to a node in the network, the peer implements a simple data class, containing the latency time in milliseconds needed to reach the referenced node.
+To represent the connection to a node in the network, the peer is implemented as a simple data class, containing the latency time in milliseconds needed to reach the referenced node.
 
 \subsubsection{Blockchain}
 In order to allow concrete implementations of different blockchain models, the blockchain class only provides the abstracted interface required by nodes. An implementation of the blockchain class therefore contains routines for adding a block and returning the length of the blockchain. Since nodes propagate whole copies of the blockchain instead of single blocks, a method of copying the blockchain has to be implemented as well.
@@ -269,8 +269,8 @@ In order to allow concrete implementations of different blockchain models, the b
 The network acts as a central controller of the blockchain framework. It maintains references to all nodes in the network and provides simple routines for starting and stopping the mining processes of all nodes in a synchronized manner. Once the network is started, the calling thread of \textit{run()} is blocked until the execution of all nodes is completed. The nodes terminate their mining threads after the network is stopped, which is ideally done as a consequence of some end condition reached by the simulation.
 
 
-\subsection{Creating the Peer-to-peer Network}
-Apart from simulating blockchains and miners, the simulator framework requires additional functionality to model different forms of peer-to-peer networks. The general task is to create a connected graph of all nodes, whereas edges and edge weights represent the latency times between two nodes. Using the strategy pattern\cite{strategy}, the simulator framework provides implementations of five different ways of modeling the network (\autoref{peerstrategy}), while additional strategies can easily be added in the future. The different peer strategies are used by instantiating the specific strategy and calling the \textit{connectPeers()} method using a list of all nodes in the network. The strategy will then populate the peer lists of each node accordingly. In the following an overview of the available strategies will be provided.
+\subsection{Creating the Peer-to-peer Network} \label{peerstratsection}
+Apart from simulating blockchains and miners, the simulator framework requires additional functionality to model different forms of peer-to-peer networks. The general task is to create a connected graph of all nodes, whereas edges and edge weights represent the latency times between two nodes. Using the strategy pattern\cite{strategy}, the simulator framework provides implementations of five different ways of modeling the network (\autoref{peerstrategy}), while additional strategies can easily be added in the future. The different peer strategies are used by instantiating the specific strategy and calling the \textit{connectPeers()} method with a list of all nodes in the network. The strategy will then populate the peer lists of each node accordingly. In the following an overview of all available strategies will be provided.
 \begin{figure}[ht]
 	\centering
   \includegraphics[width=\textwidth]{PeerStrategy.png}
@@ -292,8 +292,8 @@ The standard deviation is calculated as shown in formula \ref{distribution}. By 
 This strategy creates a graph of nodes according to a given adjacency matrix. Latencies between two nodes are represented by the matrix entries, whose indices refer to the corresponding nodes in the provided list. Negative entries indicate that there is no connection between two nodes, whereas a value of zero leads to a connection without latency. Choosing the entry values allows simulation of typical network topologies like stars and rings. After creating the graph, Dijkstra's shortest path algorithm\cite{dijkstra} is used to solve the all pairs shortest path (APSP) problem. With the resulting distance matrix, all peers of each node can be initialized.
 \subsubsection{BoolMatrixPeerStrategy}
 Similar to the previous strategy, a graph is created as specified by the given adjacency matrix. This time, positive entries of the matrix only indicate existence of a connection between two nodes, whereas negative and zero values lead to no connection in the graph. The latencies are instead sampled from a normal distribution with constant mean and standard deviation as defined by formula \ref{distribution}.
-\subsubsection{RndGraphPeerStrategy}
-This strategy generates a pseudo-random graph with a given number of nodes and edges. To avoid the infinite scale of a parameter defining the number of edges, the graph density $d$ is used instead. Since the generated graph has to be connected, the number of edges $e$ is calculated from $d$ and the number of nodes $n$ as shown in equation \ref{dens}. 
+\subsubsection{RndGraphPeerStrategy} \label{rndgraphstrategy}
+This strategy generates a pseudo-random graph with a given number of nodes and edges. To avoid the undefined scale of a parameter defining the number of edges, the graph density $d$ is used instead. Since the generated graph has to be connected, the number of edges $e$ is calculated from $d$ and the number of nodes $n$ as shown in equation \ref{dens}. 
 \begin{equation}\label{dens}
 e = max \left( d\frac{n\left( n-1\right) }{2}, n-1 \right), d\in [0,1]
 \end{equation}
@@ -301,7 +301,7 @@ It is important to note, that the created graph is not entirely random, as Algor
 
 Edge weights of the graph corresponding to the latency between two nodes are sampled according to formula \ref{distribution}. The distances between all nodes used to initialize each node's peers are again calculated by Dijkstra's APSP algorithm. 
 \begin{algorithm}
-\caption{Creates a pseudo-random graph with the given number of nodes and edges}\label{rndgraph}
+\caption{Creates a pseudo-random, undirected, connected graph with the given number of nodes and edges}\label{rndgraph}
 \begin{algorithmic}[1]
 \Procedure{RndGraph}{nodes, edges}
 \State $\textit{G} \gets \textit{(V, E)}$
@@ -324,7 +324,7 @@ Edge weights of the graph corresponding to the latency between two nodes are sam
 \end{algorithm}
 
 \section{Double-Spend Simulation}
-general idea, one run try for double spend, multiple runs for ratio. 
+In order to simulate double-spend attacks, we split the miners modeled by the blockchain framework into two parts and create two subclasses of the framework's node implementation. The newly created trusted nodes adhere to our simplified blockchain protocol and keep mining on the longest branch they are currently aware of. The attacking nodes, trying to generate a double-spending transaction, are mining blocks to extend their secret branch. Both groups of nodes are combined into an attacking and trusted network, by using two instances of the peer strategies presented in Section \ref{peerstratsection}. Initially, consent of all nodes is on a blockchain of size \textit{0}, containing the most recent block before \textbf{T\textsubscript{M}} and \textbf{T\textsubscript{A}} (Section \ref{dsa}) are published. It is assumed that both transactions are mined into the first block of their corresponding networks. After \textbf{T\textsubscript{M}} is confirmed with the simulated number of confirmations, the merchant's product is assumed to be sent. The attackers then start publishing their branch including \textbf{T\textsubscript{A}}, to convince the trusted network of their alternate transaction history not containing \textbf{T\textsubscript{M}}. The double-spend is considered to be successful, once all trusted nodes are mining on the blockchain containing \textbf{T\textsubscript{M}}.
 \subsection{Classes}
 \begin{figure}[ht]
 	\centering
@@ -333,19 +333,25 @@ general idea, one run try for double spend, multiple runs for ratio.
 	\label{simulation}
 \end{figure}
 \subsubsection{DSSimulation}
-initialises all nodes, network. creates peer graph every run if enabled. 
+The DSSimulation initially creates all other instances of this simulation, including the network and its nodes. The class represents the central controller of the simulation, keeping track of successful and failed double-spend attempts and the total number runs. Once a run is completed, the current attempt is stopped by communicating with the network and the next run is initiated. Parameters and the peer-to-peer graph can be recreated every run, to allow randomization of different simulation aspects. The simulation is generating measures as a result of the number of successful double-spends compared to the total number of runs.
 \subsubsection{DSBlockchain}
-The blockchain used to simulate double-spend attacks.  It is important to note, that despite not explicitly distinguishing between stale and valid blocks by representing the blockchain only by its length, the effect of stale blocks and branches still exists in the network. Imagine the current consensus in the network to be a blockchain of length 3. If now two nodes mine a new block at approximately the same time, both send blockchains of length 4 to every peer. In the original protocol there would be two different blockchains of length 4 spread across the network, but using our model they are indistinguishable. Nevertheless the nodes of our network simulation still experience one wasted, stale block since they mined a total of two blocks, but were only able to increase the length of the consented blockchain by one.
-\subsubsection{DSManager}
-Collects data sent from every node, keeps track of double spend progress, longest attacker \& trusted chain, success if all trusted nodes infested, failure if max length or max lead, once end condition reached reports completion to dssimulation
-\subsubsection{TrustedNode}
-atackers only sending infested blockchain to trusted nodes once trusted blockchain is confirmed, simulated by trusted nodes only accepting infested chains once confirmed. report new block to manager, depending on infested status adds progress to attacker or trusted. gets infected if previously mining on trusted chain, now on infected chain and vise verca. 
-\subsubsection{AttackerNode}
-reports each new block to manager, only accepts infested blockchains (containing fradulent transaction)
-\subsubsection{ConnectionStrategy}
-aquivalent to peerstrategy but allows connecting to sets of nodes with each other. currently only implementation: constant latency of each attacker node with each trusted node see formula
+The blockchain used to simulate double-spend attacks. Instead of modeling entire blocks, the DSBlockchain only consists of a length, which is incremented every time a new block is added. Since double-spend attacks resolve around winning the race between the attackers' and the honest nodes' blockchains, only the number of blocks in the chain are relevant and modeled by our simulation. It is important to note, that despite not explicitly distinguishing between stale and valid blocks by representing the blockchain only by its length, the effects of stale blocks and branches still exist in the network. 
 
-\subsection{Activity}
+Imagine the current consensus in the network to be a blockchain of length 3. If now two nodes mine a new block at approximately the same time, both send blockchains of length 4 to every peer. In the original protocol, this would result in two different blockchains of length 4 being spread across the network, but using our model, they are indistinguishable. Nevertheless, the nodes of our network simulation still experience one wasted, stale block, as they mined a total of two blocks, but were only able to increase the length of the consented blockchain by one.
+
+To differentiate between blockchains containing the honest payment to the merchant (\textbf{T\textsubscript{M}}) and fraudulent blockchains replacing the payment with a self receiving transaction (\textbf{T\textsubscript{A}}), the DSBlockchain contains a flag indicating whether it is malicious or not.
+\subsubsection{DSManager}
+A central manager class collecting data sent from every node. By keeping track of the longest attacker and honest blockchains and the amount of nodes mining on a fraudulent chain, the manager determines whether a double-spend attack is successful or if it should be aborted. The attempt of creating a double-spend is considered to be successful, once all nodes are mining on a fraudulent blockchain, after a honest blockchain has been confirmed. This corresponds to the network's consent to be on the double-spending transaction \textbf{T\textsubscript{A}} after the product bought with \textbf{T\textsubscript{M}} has already been shipped (Section \ref{dsa}). 
+
+Since the simulation is potentially running endlessly if the attacking network never succeeds in passing the honest network's blockchain, the manager considers two parameters in order to decide if the current attempt should be aborted. Firstly, once a maximum lead of the honest network over the attacking network's blockchain is achieved, the success of a double-spend is deemed to be too unlikely and the current run is aborted in failure. Secondly, to avoid the possibility of the honest network maintaining a steady lead, without triggering the first parameter, the simulation is restricted by a maximum length of the blockchains after which the current run fails as well.  The second parameter is especially important, if both networks contain a similar amount of nodes.
+\subsubsection{TrustedNode}
+This is the implementation of a honest node in the network, working on adding blocks to the longest chain they are currently aware of. The node originally starts working on confirming \textbf{T\textsubscript{M}} with a, by the simulation specified, number of confirmations. After the transaction is confirmed and the product of Section \ref{dsa} has been sent, the node keeps mining on the longest chain. Consequently, it might start mining on the fraudulent blockchain sent by the attacker, as long as it contains more blocks than the original chain. At this point the trusted node is convinced that \textbf{T\textsubscript{A}} is represented in the correct version of the transaction history. However, if the trusted node subsequently receives a longer blockchain containing \textbf{T\textsubscript{M}}, it will switch back to mining on a honest chain. These, infection like, switches are reported to the manager class until all trusted nodes have been convinced by the attackers or the attempt is aborted.
+\subsubsection{AttackerNode}
+Contrary to the trusted nodes, the attacking nodes ignore all blockchains not containing the fraudulent transaction \textbf{T\textsubscript{A}} and work exclusively on adding blocks to their private fork. Once \textbf{T\textsubscript{M}} has been confirmed by the trusted network, the attackers start publishing their fraudulent blockchains to convince the network of \textbf{T\textsubscript{A}}.
+\subsubsection{ConnectionStrategy}
+Similar to the framework's PeerStrategy, the ConnectionStrategy adds edges to the network's graph by populating the lists of peers maintained by each node. Instead of creating edges among nodes of a single network, this strategy allows connecting sets of nodes with each other. Since the network of attacking nodes needs to be able to send its fraudulent blockchains to the honest nodes, this functionality is used to create a connection between both networks. The only strategy currently implemented connects all attacking nodes with all honest nodes by sampling latency times from the distribution defined in formula \ref{distribution}.
+
+\subsection{Activity Diagram}
 \begin{figure}[ht]
 	\centering
   \includegraphics[width=\textwidth]{Activity1.png}
@@ -354,9 +360,31 @@ aquivalent to peerstrategy but allows connecting to sets of nodes with each othe
 \end{figure}
 
 \section{Using the Simulator}
-Parameters, ParametersBuilder, Property file, randomization, 
-
-
+The DSSimulation class is the main entry point of the double-spend simulator. It is instantiated by calling the constructor with two peer strategies to create the networks, a connection strategy to connect both networks, a boolean value indicating whether the networks should be recreated after each run and a parameters object. The simulation is started by calling the simulator's \textit{start()} method. After all runs have been completed, the results will be print out onto the console. 
+\subsection{Parameters}
+\subsubsection{Number of Nodes}
+\subsubsection{Mining Difficulty Target}
+\subsubsection{Confirmations}
+\subsubsection{Network Latency Times}
+\subsubsection{Network Graph Densities}
+\subsubsection{Number of Double-Spend Attempts}
+\subsubsection{Fault Tolerance}
+$\varepsilon$
+\subsection{ParametersBuilder}
+\subsubsection{Randomized Parameters}
+\subsubsection{Loading from Property Files}
+Using the ParametersBuilder, parameters can be load from external property files by providing the corresponding file name as shown in \autoref{proplist}. A full description of the property file's structure and usage can be found in \autoref{prop}.
+\begin{lstlisting}[language=Java, caption=Loading parameters from property file,label=proplist]
+ParametersBuilder b = new ParametersBuilder()
+Parameters p;
+try {
+	p = b.loadFromProperty("parameters.txt")
+	     .build();
+} catch (IOException ex) {
+	System.err.printf("Error: %s\n", ex);
+	System.exit(1);
+}
+\end{lstlisting}
 
 %------- chapter 5 -------
 
@@ -414,9 +442,54 @@ Parameters, ParametersBuilder, Property file, randomization,
 
 \appendix
 
-\chapter{Source Code}
-
-
+\chapter{Property Files} \label{prop}
+Property files can be used to permanently store parameters and allow simple configuration of the simulated conditions. The property file's structure is a list of key-value pairs, defined as an assignment of values to parameter names (keys) as shown in \autoref{propstruc}. In the following a short summary of all available parameters and possible values will be presented.
+\begin{lstlisting}[caption=Property file structure,label=propstruc]
+<parameter1> = <value1>
+<parameter2> = <value2>
+...
+\end{lstlisting}
+\subsubsection{NUM\_TRUSTED, NUM\_ATTACKER}
+The number of honest and attacking miners in the simulated network should be greater than zero. Since each node corresponds to an additional program thread, higher numbers of nodes should be considered carefully.
+\subsubsection{DIFFICULTY}
+The difficulty target of mining a block. Should be specified as a floating point number between 0 and 1.
+\subsubsection{CONFIRMATIONS}
+The number of blocks needed to confirm a transaction should be non-negative.
+\subsubsection{LAT\_TRUSTED, LAT\_ATTACKER}
+The mean latency in milliseconds used to create the Gaussian distribution presented in Section \ref{distribution} should be non-negative. Parameters for trusted and attacking networks can be defined individually to allow simulation of different connection qualities in the networks.
+\subsubsection{LAT\_CONNECTION}
+The mean latency in milliseconds used to model the connection between attacking and trusted network.
+\subsubsection{DENS\_TRUSTED, DENS\_ATTACKER}
+The graph density of the attacking and trusted networks as defined by the \hyperref[rndgraphstrategy]{RndGraphStrategy}. Since the created graph has to be connected, the specified floating point value should be in the range of $[\frac{2}{n}, 1]$.
+\subsubsection{RUNS}
+The number of double-spend attempts carried out by the Simulator for each simulation.
+\subsubsection{EPSILON}
+The fault tolerance corresponding to Section \ref{?} should be a floating point value in the range of $(0, 1)$.
+\subsubsection{LOGGING}
+Controls the amount of console output. Possible values are \textit{INFO}, \textit{FINE}, \textit{FINER}, \textit{FINEST}, whereas the amount of detail corresponds to $\textit{INFO} < \textit{FINE} < \textit{FINER} < \textit{FINEST}$.
+\subsubsection{Randomized Parameters}
+Bounds of randomized parameters can be specified by providing lower and upper bounds, where $lower < upper$ (\autoref{boundstruc}). If bounds of a parameter have been specified by the loaded property file, the parameter will automatically be randomized during the simulation. Randomizable parameters are latencies, graph densities and the number of confirmations.
+\begin{lstlisting}[caption=Defining bounds of randomized parameters,label=boundstruc]
+<parameter1_BOUNDS> = <lower1>, <upper1>
+<parameter2_BOUNDS> = <lower1>, <upper1>
+...
+\end{lstlisting}
+\subsubsection{Default Values}
+Undefined parameters will be initialised with default values as defined in \autoref{default}. 
+\begin{lstlisting}[caption=Default parameter values,label=default]
+NUM_TRUSTED    = 32
+NUM_ATTACKER   = 16
+DIFFICULTY     = 0.00001
+CONFIRMATIONS  = 6
+LAT_TRUSTED    = 10
+LAT_ATTACKER   = 10
+LAT_CONNECTION = 10
+DENS_TRUSTED   = 0.8
+DENS_ATTACKER  = 0.8
+RUNS           = 100
+EPSILON        = 0.00001
+LOGGING        = FINE
+\end{lstlisting}
 \clearpage
 
 \listoffigures
