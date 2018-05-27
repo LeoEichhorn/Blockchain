@@ -33,15 +33,8 @@ public class DSSimulation {
     private ArrayList<Node> attackerNodes;
     private ArrayList<Node> nodes;
     
-    private boolean resetPeers;
-    
-    public DSSimulation(Parameters p, boolean resetPeers) {
-        this(p,
-            new RndGraphPeerStrategy(p.getTrustedNodes(), p.getTrustedGraphDensityParameter(), p.getTrustedLatencyParameter(), 0.1),
-            new RndGraphPeerStrategy(p.getAttackerNodes(), p.getAttackerGraphDensityParameter(), p.getAttackerLatencyParameter(), 0.1),
-            new ConstantConnectionStrategy(p.getConnectionLatencyParameter(), 0.1),
-            resetPeers
-        );
+    public DSSimulation(Parameters p) {
+        this(p, p.getTrustedPeerStrategy(), p.getAttackerPeerStrategy(), p.getConnectionStrategy());
     }
     
     /**
@@ -50,11 +43,10 @@ public class DSSimulation {
      * @param trustedPeerStrat The PeerStrategy of creating the trusted network
      * @param attackerPeerStrat The PeerStrategy of creating the attacker network
      * @param attackerStrat The Strategy of connecting the attacker network with the trusted network
-     * @param resetPeers True - Peer network should be reset after each run
      */
     public DSSimulation(Parameters p, PeerStrategy trustedPeerStrat, 
-            PeerStrategy attackerPeerStrat, ConnectionStrategy attackerStrat, boolean resetPeers) {
-        
+            PeerStrategy attackerPeerStrat, ConnectionStrategy attackerStrat) {
+        Logger.setLevel(p.getLogLevel());
         this.p = p;
         this.network = new Network();
         this.success = this.failure = 0;
@@ -66,9 +58,7 @@ public class DSSimulation {
         this.trustedNodes = new ArrayList<>(p.getTrustedNodes());
         this.attackerNodes = new ArrayList<>(p.getAttackerNodes());
         this.nodes = new ArrayList<>(p.getNodes());
-        
-        this.resetPeers = resetPeers;
-        
+                
         DSManager dsm = new DSManager(p, this, network);
         for (int i = 0; i < p.getTrustedNodes(); i++) {
             trustedNodes.add(new TrustedNode(dsm, network, p, "Trusted "+i));
@@ -99,8 +89,7 @@ public class DSSimulation {
     public void start() {
         while(success+failure < p.getRuns()){
             p.next();
-            if(success+failure == 0 || resetPeers)
-                createPeers();
+            createPeers();
             network.run();
         }
         

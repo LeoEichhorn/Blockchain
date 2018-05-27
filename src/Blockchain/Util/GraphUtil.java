@@ -26,14 +26,14 @@ public class GraphUtil {
         }
     }
     
-    public static ArrayList<LinkedList<EdgeTo>> fromBoolMatrix(int[][] b, long mean, double stdDev, boolean symmetric) {
+    public static ArrayList<LinkedList<EdgeTo>> fromBoolMatrix(int[][] b, long mean, boolean symmetric) {
         Random rnd = new Random();
         int n = b.length;
         long[][] m = new long[n][n];
         for(int i = 0; i < n; i++) {
             for(int j = i+1; j < n; j++) {
                 if(b[i][j]>0){
-                    long latency = (long) Util.nextGaussian(rnd, mean, stdDev);
+                    long latency = (long) Util.nextGaussian(rnd, mean);
                     m[i][j] = latency;
                     if(symmetric){
                         m[j][i] = latency;
@@ -43,7 +43,7 @@ public class GraphUtil {
                     m[i][j] = -1;
                 }
                 if(b[j][i]>0){
-                    long latency = (long) Util.nextGaussian(rnd, mean, stdDev);
+                    long latency = (long) Util.nextGaussian(rnd, mean);
                     m[j][i] = latency;
                     if(symmetric)
                         m[i][j] = latency;
@@ -74,7 +74,7 @@ public class GraphUtil {
         return adj;
     }
     
-    public static ArrayList<LinkedList<EdgeTo>> rndGraph(int n, int edges, long mean, double stdDev) {
+    public static ArrayList<LinkedList<EdgeTo>> rndGraph(int n, int edges, long mean) {
         edges = Math.min((n*(n-1))/2, Math.max(edges, n-1));
         Random rnd = new Random();
         ArrayList<LinkedList<EdgeTo>> adj = new ArrayList<>(n);
@@ -84,7 +84,7 @@ public class GraphUtil {
         for(int i = 1; i < n; i++){
             adj.add(new LinkedList<>());
             int index = rnd.nextInt(i);
-            long latency = (long) Util.nextGaussian(rnd, mean, stdDev);
+            long latency = (long) Util.nextGaussian(rnd, mean);
             adj.get(index).add(new EdgeTo(i, latency));
             adj.get(i).add(new EdgeTo(index, latency));
             con[i][index] = con[index][i] = true;
@@ -101,7 +101,7 @@ public class GraphUtil {
             int x = set.removeRandom(rnd);
             int y = getFreeNeighbor(x, rnd, con, set);
             
-            long latency = (long) Util.nextGaussian(rnd, mean, stdDev);
+            long latency = (long) Util.nextGaussian(rnd, mean);
             adj.get(x).add(new EdgeTo(y, latency));
             adj.get(y).add(new EdgeTo(x, latency));
             con[x][y] = con[x][y] = true;

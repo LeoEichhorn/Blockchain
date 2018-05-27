@@ -1,28 +1,23 @@
 package Blockchain.Peers;
 
 import Blockchain.Node;
+import Blockchain.Util.Parameter;
 import Blockchain.Util.Util;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class EuclideanPeerStrategy extends PeerStrategy{
-    private int width;
-    private int height;
-    private double deviationFactor;
+    private Parameter<Integer> side;
     private Random rnd;
 
     /**
-     * All Nodes are assigned random coordinates in a 2D plane. The latency
+     * All Nodes are assigned random coordinates in a 2D square. The latency
      * between two Nodes is sampled from a normal distribution whose mean is
-     * proportional to the nodes' euclidiean distance with constant standard deviation.
-     * @param width The width of the plane.
-     * @param height The height of the plane
-     * @param deviationFactor The deviation of latency between any two nodes is calculated by deviationFactor*mean
+     * proportional to the nodes' euclidean distance with constant standard deviation.
+     * @param side The width and height of the square.
      */
-    public EuclideanPeerStrategy(int width, int height, double deviationFactor) {
-        this.width = width;
-        this.height = height;
-        this.deviationFactor = deviationFactor;
+    public EuclideanPeerStrategy(Parameter<Integer> side) {
+        this.side = side;
         this.rnd = new Random();
     }
 
@@ -46,13 +41,13 @@ public class EuclideanPeerStrategy extends PeerStrategy{
     
     private long latency(Point a, Point b) {
         double mean = Math.sqrt(Math.pow(a.x-b.x, 2)+Math.pow(a.y-b.y, 2));
-        return (long) Util.nextGaussian(rnd, mean, mean*deviationFactor);
+        return (long) Util.nextGaussian(rnd, mean);
     }
     
     private Point rndPoint() {
         return new Point(
-            rnd.nextInt(width + 1),
-            rnd.nextInt(height + 1)
+            rnd.nextInt(side.getValue() + 1),
+            rnd.nextInt(side.getValue() + 1)
         );
     }
 

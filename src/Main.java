@@ -2,7 +2,6 @@ import DoubleSpend.Parameters;
 import DoubleSpend.Parameters.*;
 import DoubleSpend.DSSimulation;
 import Blockchain.Peers.*;
-import Blockchain.Util.Logger;
 import OrphanRate.ORSimulation;
 import java.io.IOException;
 
@@ -17,14 +16,14 @@ public class Main {
                         .build();
             } else {
                 p = (new ParametersBuilder())
+                        .setAttackerPeerStrategy(PeerStrategyEnum.CONSTANT)
                         .loadFromProperty("parameters.txt")
                         .build();
             }
         } catch (IOException ex) {
-            System.err.println("Error loading parameters:\n"+ex);
+            System.err.printf("Error loading parameters: %s\n", ex);
             System.exit(1);
         }
-        Logger.setLevel(p.getLogLevel());
         doubleSpend(p);
     }
 
@@ -36,8 +35,7 @@ public class Main {
                 p.getRuns(), "" + p.getDifficulty(), p.getConfirmations(),
                 p.getTrustedNodes(), p.getAttackerNodes(),
                 p.getMaxLead(), p.getMaxLength());
-
-        DSSimulation sim = new DSSimulation(p, true);
+        DSSimulation sim = new DSSimulation(p);
         sim.start();
     }
     
@@ -47,7 +45,7 @@ public class Main {
                 p.getMaxLength(), "" + p.getDifficulty(), p.getNodes());
 
         PeerStrategy ORPeerStrategy = new RndGraphPeerStrategy(p.getNodes(), 
-                new DoubleParameter(0.7), new IntParameter(50), 0.1);
+                new DoubleParameter(0.7), new IntParameter(50));
         
         ORSimulation sim = new ORSimulation(p, ORPeerStrategy);
         sim.start();

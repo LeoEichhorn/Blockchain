@@ -1,5 +1,10 @@
 package DoubleSpend;
 
+import Blockchain.Peers.AdjMatrixPeerStrategy;
+import Blockchain.Peers.ConstantPeerStrategy;
+import Blockchain.Peers.EuclideanPeerStrategy;
+import Blockchain.Peers.PeerStrategy;
+import Blockchain.Peers.RndGraphPeerStrategy;
 import Blockchain.Util.Parameter;
 import Blockchain.Util.Util;
 import java.io.FileInputStream;
@@ -47,6 +52,13 @@ public class Parameters {
     
     //Controls amount of console output (INFO < FINE < FINER < FINEST)
     private final Level logLevel;
+    
+    //The strategies used to create trusted and attacking networks
+    private final PeerStrategy tPeerStrat;
+    private final PeerStrategy aPeerStrat;
+    
+    //The strategy used to connect the trusted network with the attacking network
+    private final ConnectionStrategy connStrat;
 
     public Parameters(ParametersBuilder b) {
         this.trustedNodes = b.trustedNodes;
@@ -61,6 +73,9 @@ public class Parameters {
         this.runs = b.runs;
         this.epsilon = b.epsilon;
         this.logLevel = b.logLevel;
+        this.tPeerStrat = b.tPeerStrat;
+        this.aPeerStrat = b.aPeerStrat;
+        this.connStrat = b.connStrat;
         
         nodes = trustedNodes + attackerNodes;
         
@@ -168,6 +183,18 @@ public class Parameters {
     public Level getLogLevel() {
         return logLevel;
     }
+
+    public PeerStrategy getTrustedPeerStrategy() {
+        return tPeerStrat;
+    }
+    
+    public PeerStrategy getAttackerPeerStrategy() {
+        return aPeerStrat;
+    }
+
+    public ConnectionStrategy getConnectionStrategy() {
+        return connStrat;
+    }
     
     public static class IntParameter implements Parameter<Integer> {
         private int value;
@@ -195,7 +222,7 @@ public class Parameters {
             return value;
         }
         
-        private void randomize(int upper, int lower){
+        private void randomize(int lower, int upper){
             randomized = true;
             this.rng = new Random();
             this.upper = upper;
@@ -235,7 +262,7 @@ public class Parameters {
             return value;
         }
         
-        private void randomize(double upper, double lower){
+        private void randomize(double lower, double upper){
             randomized = true;
             this.rng = new Random();
             this.upper = upper;
@@ -247,6 +274,14 @@ public class Parameters {
                 return value;
             return value = lower + (upper - lower) * rng.nextDouble();
         }  
+    }
+    
+    public enum PeerStrategyEnum {
+        CONSTANT, EUCLIDEAN, RANDOM
+    }
+    
+    public enum ConnectionStrategyEnum {
+        CONSTANT
     }
 
     public static class ParametersBuilder {
@@ -264,7 +299,12 @@ public class Parameters {
         private int runs;
         private double epsilon;
         private Level logLevel;
+        private PeerStrategy tPeerStrat;
+        private PeerStrategy aPeerStrat;
+        private ConnectionStrategy connStrat;
         
+        private PeerStrategyEnum tps,aps;
+        private ConnectionStrategyEnum cs;
 
         public ParametersBuilder() {
             this.p = new Properties();
@@ -280,6 +320,9 @@ public class Parameters {
             this.runs          = 100;
             this.epsilon       = 0.00001;
             this.logLevel      = Level.FINE;
+            this.tps = PeerStrategyEnum.RANDOM;
+            this.aps = PeerStrategyEnum.RANDOM;
+            this.cs = ConnectionStrategyEnum.CONSTANT;
         }
 
         public ParametersBuilder setTrustedNodes(int trustedNodes) {
@@ -302,8 +345,8 @@ public class Parameters {
             return this;
         }
         
-        public ParametersBuilder randomizeConfirmations(int upper, int lower) {
-            this.confirmations.randomize(upper, lower);
+        public ParametersBuilder randomizeConfirmations(int lower, int upper) {
+            this.confirmations.randomize(lower, upper);
             return this;
         }
 
@@ -312,8 +355,8 @@ public class Parameters {
             return this;
         }
         
-        public ParametersBuilder randomizeTrustedLatency(int upper, int lower) {
-            this.trustedLatency.randomize(upper, lower);
+        public ParametersBuilder randomizeTrustedLatency(int lower, int upper) {
+            this.trustedLatency.randomize(lower, upper);
             return this;
         }
 
@@ -322,8 +365,8 @@ public class Parameters {
             return this;
         }
         
-        public ParametersBuilder randomizeAttackerLatency(int upper, int lower) {
-            this.attackerLatency.randomize(upper, lower);
+        public ParametersBuilder randomizeAttackerLatency(int lower, int upper) {
+            this.attackerLatency.randomize(lower, upper);
             return this;
         }
 
@@ -332,8 +375,8 @@ public class Parameters {
             return this;
         }
         
-        public ParametersBuilder randomizeConnectionLatency(int upper, int lower) {
-            this.connectionLatency.randomize(upper, lower);
+        public ParametersBuilder randomizeConnectionLatency(int lower, int upper) {
+            this.connectionLatency.randomize(lower, upper);
             return this;
         }
 
@@ -342,8 +385,8 @@ public class Parameters {
             return this;
         }
         
-        public ParametersBuilder randomizeTrustedGraphDensity(double upper, double lower) {
-            this.trustedGraphDensity.randomize(upper, lower);
+        public ParametersBuilder randomizeTrustedGraphDensity(double lower, double upper) {
+            this.trustedGraphDensity.randomize(lower, upper);
             return this;
         }
 
@@ -352,8 +395,8 @@ public class Parameters {
             return this;
         }
         
-        public ParametersBuilder randomizeAttackerGraphDensity(double upper, double lower) {
-            this.attackerGraphDensity.randomize(upper, lower);
+        public ParametersBuilder randomizeAttackerGraphDensity(double lower, double upper) {
+            this.attackerGraphDensity.randomize(lower, upper);
             return this;
         }
         
@@ -371,8 +414,47 @@ public class Parameters {
             this.logLevel = logLevel;
             return this;
         }
+
+        public ParametersBuilder setTrustedPeerStrategy(PeerStrategyEnum tPeerStrat) {
+            this.tps = tPeerStrat;
+            return this;
+        }
+
+        public ParametersBuilder setAttackerPeerStrategy(PeerStrategyEnum aPeerStrat) {
+            this.aps = aPeerStrat;
+            return this;
+        }
+
+        public ParametersBuilder setConnectionStrategy(ConnectionStrategyEnum connStrat) {
+            this.cs = connStrat;
+            return this;
+        }
         
+        public ParametersBuilder setTrustedPeerStrategy(PeerStrategy tPeerStrat) {
+            this.tps = null;
+            this.tPeerStrat = tPeerStrat;
+            return this;
+        }
+
+        public ParametersBuilder setAttackerPeerStrategy(PeerStrategy aPeerStrat) {
+            this.aps = null;
+            this.aPeerStrat = aPeerStrat;
+            return this;
+        }
+
+        public ParametersBuilder setConnectionStrategy(ConnectionStrategy connStrat) {
+            this.cs = null;
+            this.connStrat = connStrat;
+            return this;
+        }
+
         public Parameters build() {
+            if(tps != null)
+                tPeerStrat = buildTrustedPeerStrat();
+            if(aps != null)
+                aPeerStrat = buildAttackerPeerStrat();
+            if(cs != null)
+                connStrat = buildConnStrat();
             return new Parameters(this);
         }
         
@@ -395,8 +477,40 @@ public class Parameters {
                     setDoubleBounds(attackerGraphDensity, getDoubleBounds("DENS_ATTACKER_BOUNDS")).
                     setRuns(getInteger("RUNS", runs)).
                     setEpsilon(getDouble("EPSILON", epsilon)).
-                    setLogLevel(getLevel("LOGGING", logLevel));
-            
+                    setLogLevel(getLevel("LOGGING", logLevel)).
+                    setTrustedPeerStrategy(getPeerStrat("T_PEER_STRAT", tps)). 
+                    setAttackerPeerStrategy(getPeerStrat("A_PEER_STRAT", aps)).
+                    setConnectionStrategy(getConnStrat("CONN_STRAT", cs));
+        }
+        
+        private PeerStrategyEnum getPeerStrat(String key, PeerStrategyEnum defaultValue) {
+            String value = p.getProperty(key);
+            if (value == null) {
+                return defaultValue;
+            }
+            switch(value.toUpperCase()) {
+                case "CONSTANT":
+                    return PeerStrategyEnum.CONSTANT;
+                case "EUCLIDEAN":
+                    return PeerStrategyEnum.EUCLIDEAN;
+                case "RANDOM":
+                    return PeerStrategyEnum.RANDOM;
+                default:
+                    return defaultValue;
+            }
+        }
+        
+        private ConnectionStrategyEnum getConnStrat(String key, ConnectionStrategyEnum defaultValue) {
+            String value = p.getProperty(key);
+            if (value == null) {
+                return defaultValue;
+            }
+            switch(value.toUpperCase()) {
+                case "CONSTANT":
+                    return ConnectionStrategyEnum.CONSTANT;
+                default:
+                    return defaultValue;
+            }
         }
         
         private double getDouble(String key, double defaultValue) {
@@ -481,6 +595,41 @@ public class Parameters {
                     return Level.FINEST;
                 default:
                     return defaultValue;
+            }
+        }
+        
+        private PeerStrategy buildAttackerPeerStrat(){
+            switch(aps){
+                case CONSTANT:
+                    return new ConstantPeerStrategy(attackerLatency);
+                case EUCLIDEAN:
+                    return new EuclideanPeerStrategy(attackerLatency);
+                case RANDOM:
+                    return new RndGraphPeerStrategy(attackerNodes, attackerGraphDensity, attackerLatency);
+                default:
+                    return null;
+            }
+        }
+       
+        private PeerStrategy buildTrustedPeerStrat(){
+            switch(tps){
+                case CONSTANT:
+                    return new ConstantPeerStrategy(trustedLatency);
+                case EUCLIDEAN:
+                    return new EuclideanPeerStrategy(trustedLatency);
+                case RANDOM:
+                    return new RndGraphPeerStrategy(trustedNodes, trustedGraphDensity, trustedLatency);
+                default:
+                    return null;
+            }
+        }
+        
+        private ConnectionStrategy buildConnStrat(){
+            switch(cs){
+                case CONSTANT:
+                    return new ConstantConnectionStrategy(connectionLatency);
+                default:
+                    return null;
             }
         }
     }
