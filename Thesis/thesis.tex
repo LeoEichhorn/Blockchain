@@ -103,14 +103,13 @@
 \clearpage
 
 \begin{acronym}
-\acro{RADS}{Resistance of a blockchain architecture against double spend attacks}
-\acro{UTXO}{Bitcoin unspent transaction output}
 \acro{APSP}{All pairs shortest path problem}
 \acro{BTC}{The Bitcoin currency}
-\acro{PoW}{Proof of work}
 \acro{DSA}{Double-spend attack}
 \acro{PDS}{Percentage of successful double-spend attacks}
 \acro{PSB}{Percentage of stale blocks}
+\acro{RADS}{Resistance of a blockchain architecture against double spend attacks}
+\acro{UTXO}{Bitcoin unspent transaction output}
 \end{acronym}
 
 \pagenumbering{arabic}
@@ -303,36 +302,12 @@ This strategy generates a pseudo-random graph with a given number of nodes and e
 \begin{equation}\label{dens}
 e = max \left( d\frac{n\left( n-1\right) }{2}, n-1 \right), d\in [0,1]
 \end{equation}
-It is important to note, that the created graph is not entirely random, as Algorithm \ref{rndgraph} introduces a bias by always selecting a visited node for one end of a new edge. Since for each iteration, only visited nodes are considered, earlier nodes are more likely to receive a higher degree.\cite{stackoverflow} 
-
 Edge weights of the graph corresponding to the latency between two nodes are sampled according to formula \ref{distribution}. The distances between all nodes used to initialize each node's peers are again calculated by Dijkstra's APSP algorithm. 
-\begin{algorithm}
-\caption{Creates a pseudo-random, undirected, connected graph with the given number of nodes and edges}\label{rndgraph}
-\begin{algorithmic}[1]
-\Procedure{RndGraph}{nodes, edges}
-\State $\textit{G} \gets \textit{(V, E)}$
-\State $i \gets 0$
-\State $V \cup \{i \}$
-\While {$++i < \textit{nodes}$}
-\State $u \gets \textit{rndElement(V)}$
-\State $V \cup \{i \}$
-\State $E \cup \{(i,u),(u,i) \}$
-\EndWhile
-\State $e \gets edges - (nodes-1)$
-\While {$e-- > 0$}
-\State $E' \gets \textit{missingEdges(G)}$
-\State $(x,y) \gets \textit{rndElement(E')}$
-\State $E \cup \{(x,y),(y,x) \}$
-\EndWhile
-\State \Return $G$
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
 
 \section{Double-Spend Simulation}
 In order to simulate double-spend attacks, we split the miners modeled by the blockchain framework into two parts and create two subclasses of the framework's node implementation. The newly created trusted nodes adhere to our simplified blockchain protocol and keep mining on the longest branch they are currently aware of. The attacking nodes, trying to generate a double-spending transaction, are mining blocks to extend their secret branch. Both groups of nodes are combined into an attacking and trusted network, by using two instances of the peer strategies presented in Section \ref{peerstratsection}. Unless otherwise specified, the double-spend simulator uses two \textit{RndGraphPeerStrategies} and recreates the resulting graphs randomly before every new simulation run. Initially, consent of all nodes is on a blockchain of size \textit{0}, containing the most recent block before \textbf{T\textsubscript{M}} and \textbf{T\textsubscript{A}} (Section \ref{dsa}) are published. It is assumed that both transactions are mined into the first block of their corresponding networks. After \textbf{T\textsubscript{M}} is confirmed with the simulated number of confirmations, the merchant's product is assumed to be sent. The attackers then start publishing their branch including \textbf{T\textsubscript{A}}, to convince the trusted network of their alternate transaction history not containing \textbf{T\textsubscript{M}}. The double-spend is considered to be successful, once all trusted nodes are mining on the blockchain containing \textbf{T\textsubscript{A}}.
 \subsection{Classes}
-\begin{figure}[ht]
+\begin{figure}
 	\centering
   \includegraphics[width=\textwidth]{Simulation.png}
 	\caption{Class diagram of the double-spend simulation}
@@ -379,7 +354,7 @@ The parameters object is a collection of constants and variables defining the si
 \subsubsection{Number of Nodes}
 The number of nodes consists of the number of attacking and trusted nodes in the networks, consequently there should be at least one node in each of the networks. Since the number of nodes relates to the number of threads created by the simulator, large amounts of nodes should be considered carefully.
 \subsubsection{Mining Difficulty Target}
-Mining a block in the simulation requires finding a random number $x$ smaller than a target difficulty $t$, whereas $x$ is chosen from an uniform distribution between zero and one (\autoref{uniform}). By defining the target interval as shown in \autoref{tinterval}, the target difficulty precisely represents the probability of the next random number to be a valid proof of work.
+Mining a block in the simulation requires finding a random number $x$,which is smaller than a target difficulty $t$, whereas $x$ is chosen from an uniform distribution between zero and one (\autoref{uniform}). By defining the target interval as shown in \autoref{tinterval}, the target difficulty precisely represents the probability of the next random number to be a valid proof of work.
 \begin{subequations}
 \begin{equation}\label{uniform}
 x \in X\sim \mathcal{U}(0,1)
@@ -488,11 +463,11 @@ The goal is to proof, that each of the model's independent variables does in fac
 \end{itemize}
 using the Kruskal-Wallis rank sum test and a confidence level of 95\%. Since 100 $PDS$ is the maximal value returned by the simulator, consecutive data points of 100 $PDS$ will be ignored in the generation of fitted curves. To receive the actual value of $PDS$ when applying one of the fitted models, the model's formula can be altered to
 \begin{equation}\label{min}
-PDS = min(M(p), 100)
+PDS = min(M(p), 100).
 \end{equation}
 \section{Results} \label{results}
 \subsubsection{Number of Nodes $N$}
-To determine whether the total number of nodes has an effect on the $PDS$, multiple simulations have been run while gradually raising the number of nodes in both networks. By increasing the number of attacking nodes by 30 and the number of trusted nodes by 60, the ratio between attacking and trusted nodes is kept at a constant level of $\frac{1}{3}$. Runs for each treatment have been replicated five times.  \autoref{numnodes} represents the sampled data using a box blot, visualizing treatment levels up to 990 nodes in total.
+To determine whether the total number of nodes in the network has an effect on the $PDS$, multiple simulations have been run while gradually raising the number of nodes in both networks. By increasing the number of attacking nodes by 30 and the number of trusted nodes by 60, the ratio between attacking and trusted nodes is kept at a constant level of $\frac{1}{3}$. Runs for each treatment have been replicated five times.  \autoref{numnodes} represents the sampled data using a box blot, visualizing treatment levels up to 990 nodes in total.
 \begin{figure}
 \centering
 \begin{minipage}{.5\textwidth}
@@ -513,7 +488,11 @@ To determine whether the total number of nodes has an effect on the $PDS$, multi
 In order to improve comparability of our results to existing work, especially hashrate-based models presented by \cite{HBDSA} and \cite{DSAwithTime} (Chapter \ref{relatedwork}), we combine the two independent variables corresponding to the number of attacking and trusted nodes into a single variable, indicating the ratio of attacking nodes. Since all simulated nodes possess the same computing power, the ratio $R$ roughly relates to the hashrate controlled by an attacker in \cite{nakamoto2008bitcoin,HBDSA,DSAwithTime}. \autoref{ratio} shows the $PDS$ as a function of the attacker ratio. Using the default configuration of \autoref{prop}, the number of nodes controlled by the attacker is increased by $\frac{1}{48}$ after four repetitions of 100 double-spend attempts. The resulting model will be used as a reference model in all following experiments, represented by a black curve in the plotted graphs. The proportion of hashing power required to be controlled by an attacker in order to carry out DSAs, seems to be of special interest in literature. The comparison of our results with the reference model therefore enables us to visualize the influence of other parameters on the effective impact of this proportion $R$.
 
 \subsubsection{Confirmation length $C$} \label{consres}
-The effect of the number of confirmations $C$, a merchant is waiting for until a received payment is considered to be valid, is studied in several experiments testing treatments in the range of 0 to 30 confirmations. \autoref{conf:a} shows the results of experiments with 10, 16 and 22 attacking nodes, as a function of $C$. \autoref{conf:b} replicates the previous experiment, by testing the attacker ratio $R$ with different confirmation lengths to compare with our reference model.\begin{figure}[hb!]
+The effect of the number of confirmations $C$, a merchant is waiting for until a received payment is considered to be valid, is studied in several experiments testing treatments in the range of 0 to 30 confirmations. \autoref{conf:a} shows the results of experiments with 10, 16 and 22 attacking nodes, as a function of $C$. \autoref{conf:b} replicates the previous experiment, by testing the attacker ratio $R$ with different confirmation lengths to compare with our reference model.
+
+\subsubsection{Connection Latency $L_C$}
+Since the simulator uses the \textit{ConstantConnectionStrategy} presented in Section \ref{connstrat}, $L_C$ represents the mean latency time in milliseconds it takes until all trusted nodes receive a new block mined by an attacking node. The effects of this independent variable were tested by incrementing $L_C$ by 25 milliseconds after 3 simulation runs. \autoref{conn:a} visualizes the experiments up to 700 milliseconds, while \autoref{conn:b} again shows the impact of $L_C$ on an attacker's $PDS$ when controlling a proportion $R$ of the total nodes.
+\begin{figure}[h!]
 \centering
 \begin{subfigure}{.5\textwidth}
   \centering
@@ -530,9 +509,7 @@ The effect of the number of confirmations $C$, a merchant is waiting for until a
 \caption{Effects of the confirmation length $C$ on $PDS$}
 \label{conf}
 \end{figure}
-
-\subsubsection{Connection Latency $L_C$}
-Since the simulator uses the \textit{ConstantConnectionStrategy} presented in Section \ref{connstrat}, $L_C$ represents the mean latency time in milliseconds it takes until all trusted nodes receive a new block mined by an attacking node. The effects of this independent variable were tested by incrementing $L_C$ by 25 milliseconds after 3 simulation runs. \autoref{conn:a} visualizes the experiments up to 700 milliseconds, while \autoref{conn:b} again shows the impact of $L_C$ on an attacker's $PDS$ when controlling a proportion $R$ of the total nodes.\begin{figure}[hb!]
+\begin{figure}[h!]
 \centering
 \begin{subfigure}{.5\textwidth}
   \centering
@@ -554,12 +531,7 @@ Since the simulator uses the \textit{ConstantConnectionStrategy} presented in Se
 \autoref{trulat:a} shows the $PDS$ as a function of the mean latency between adjacent peers in the trusted network. Effects of the parameters are tested for treatments up to 100 milliseconds, with treatment levels incremented by 5 milliseconds after 4 simulation runs. Data points corresponding to $L_T > 75ms$ are rounded up to 100 $PDS$ and ignored during generation of the exponential model. \autoref{trulat:a} also visualizes the percentage of stale blocks generated by the trusted network with increasing latency as a LOESS fit. \autoref{trulat:b} shows the effect of different values of $L_T$ on our reference model.
 
 \autoref{attlat:a} and \autoref{attlat:b} represent replications of the experiments testing $L_T$. The same treatments are now applied on the independent variable $L_A$, representing the mean latency between peers of the attacking network.
-
-\subsubsection{Graph Density $D_{A,T}$}
-\autoref{trudens:a} shows the $PDS$ as a function of the trusted network's graph density. Two experiments with network latency times of 10ms and 100ms are conducted, while the first experiment also measures the effects of the graph density on the $PSB_T$. \autoref{trudens:b} shows the effect of a low trusted graph density on $PDS$ as a function of $R$.
-
-In \autoref{attdens}, the same experiments are replicated for the graph density in the attacker's network ($D_{A})$.
-\begin{figure}[hb]
+\begin{figure}[!ht]
 \centering
 \begin{subfigure}{.5\textwidth}
   \centering
@@ -573,11 +545,6 @@ In \autoref{attdens}, the same experiments are replicated for the graph density 
   \caption{Effects of $L_{T}$ on reference model}
   \label{trulat:b}
 \end{subfigure}
-\caption{Effects of the mean trusted latency $L_{T}$ on $PDS$}
-\label{trulat}
-\end{figure}
-\begin{figure}
-\centering
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=\linewidth]{Experiments/AttLatency/attlat.png}
@@ -590,10 +557,15 @@ In \autoref{attdens}, the same experiments are replicated for the graph density 
   \caption{Effects of $L_{A}$ on reference model}
   \label{attlat:b}
 \end{subfigure}
-\caption{Effects of the mean attacker latency $L_{A}$ on $PDS$}
-\label{attlat}
+\caption{Effects of mean trusted ($L_{T}$) and attacker ($L_{A}$) latency on $PDS$}
+\label{latplot}
 \end{figure}
-\begin{figure}[hb!]
+\subsubsection{Graph Density $D_{A,T}$}
+\autoref{trudens:a} shows the $PDS$ as a function of the trusted network's graph density. Two experiments with network latency times of 10ms and 100ms are conducted, while the first experiment also measures the effects of the graph density on the $PSB_T$. \autoref{trudens:b} shows the effect of a low trusted graph density on $PDS$ as a function of $R$.
+
+In \autoref{attdens:a} and \autoref{attdens:b}, the same experiments are replicated for the graph density in the attacker's network ($D_{A})$.
+
+\begin{figure}[!ht]
 \centering
 \begin{subfigure}{.5\textwidth}
   \centering
@@ -607,11 +579,6 @@ In \autoref{attdens}, the same experiments are replicated for the graph density 
   \caption{Effects of $D_{T}$ on reference model}
   \label{trudens:b}
 \end{subfigure}
-\caption{Effects of the trusted graph density $D_{T}$ on $PDS$}
-\label{trudens}
-\end{figure}
-\begin{figure}
-\centering
 \begin{subfigure}{.5\textwidth}
   \centering
   \includegraphics[width=\linewidth]{Experiments/AttDensity/attdens.png}
@@ -624,8 +591,8 @@ In \autoref{attdens}, the same experiments are replicated for the graph density 
   \caption{Effects of $D_{A}$ on reference model}
   \label{attdens:b}
 \end{subfigure}
-\caption{Effects of the attacker graph density $D_{A}$ on $PDS$}
-\label{attdens}
+\caption{Effects of trusted ($D_{T}$) and attacker ($D_{A}$) graph density on $PDS$}
+\label{densplot}
 \end{figure}
 
 \subsubsection{Difficulty target $T$}
@@ -650,7 +617,7 @@ In \autoref{attdens}, the same experiments are replicated for the graph density 
 \section{Discussion}
 \subsubsection{Number of Nodes $N$}
 \autoref{numnodes} suggests, that the means of the factor levels for $N$ are roughly equal and no underlying trend of the data can be observed immediately. This assumption is validated by the Kruskal-Wallis test in \autoref{nanova}. Since $p > 5\%$, the differences in the means of factor levels are not significant at a level of 5\%. Therefore, the null hypothesis $H_{0,N}$, as defined in Section \ref{design}, can not be rejected. We conclude, that the amount of total nodes $N$ has no significant effect on $PDS$. Since all nodes of the simulator contain the same computing power, this observation is sensible. We assume that especially the proportion of attacking nodes compared to trusted nodes results in a change of $PDS$. Since this proportion was kept at a constant level in \autoref{numnodes}, no effects can be observed.
-\begin{table}[hb]
+\begin{table}[ht]
 \centering
 \begin{tabular}{|l|l|l|l|l|l|} \hline
 & Df & $\chi^{2}$ & p-value \\ \hline
@@ -660,7 +627,7 @@ $N$ & 10 &  2.7562 & 0.9866 \\ \hline
 \label{nanova}
 \end{table}
 \subsubsection{Ratio of Attacking Nodes $R$}
-The trend of \autoref{ratio} is comparable to the plots of hashrate-based models by \cite{HBDSA} or \cite{DSAwithTime}, whereas the hashrate owned by an attacker corresponds to the ratio of nodes under an attacker's control in our model. The $PDS$ seems to be rising exponentially with increasing $R$, which is also confirmed by the fitted curve. Once the majority of the network is controlled by an attacker, double-spend attacks appear to be always possible. An important difference and interesting observation is, that at exactly 50\% control of the attacker, successful DSAs are not guaranteed. This observation is contrary to the mathematical models proposed by \cite{nakamoto2008bitcoin,HBDSA,DSAwithTime}. This effect can be explained by looking at the end conditions of our simulator. If the trusted network is able to maintain a steady lead over the attackers' blockchain fork, without triggering the maximum lead parameter to end the simulation, the attempt will fail after a maximum blockchain length is reached. This scenario is especially likely if the attacking network's computing power is very similar to the computing power controled by the trusted nodes. In reality, this observation might correspond to an attacker being unable to maintain the necessary resources of conducting a DSA over a long timeframe. The attacker might be forced to abort the DSA, since mining on a secret chain does not generate any revenue. \cite{longestchain} argues in a similar way, in that an attacker will only ever be able to maintain such a significant amount of hashing power over a short period of time. 
+The trend of \autoref{ratio} is comparable to the plots of hashrate-based models by \cite{HBDSA} or \cite{DSAwithTime}, whereas the hashrate owned by an attacker corresponds to the ratio of nodes under an attacker's control in our model. The $PDS$ seems to be rising exponentially with increasing $R$, which is also confirmed by the fitted curve. Once the majority of the network is controlled by an attacker, double-spend attacks appear to be always possible. An important difference and interesting observation is, that at exactly 50\% control of the attacker, successful DSAs are not guaranteed. This observation is contrary to the mathematical models proposed by \cite{nakamoto2008bitcoin,HBDSA,DSAwithTime} and can be explained by looking at the end conditions of our simulator. If the trusted network is able to maintain a steady lead over the attackers' blockchain fork, without triggering the maximum lead parameter to end the simulation, the attempt will fail after a maximum blockchain length is reached. This scenario is especially likely if the attacking network's computing power is very similar to the computing power controled by the trusted nodes, since this results in both networks having equal chances of mining the next block. In reality, this observation might correspond to an attacker being unable to maintain the necessary resources of conducting a DSA over a long timeframe. The attacker might be forced to abort the DSA, since mining on a secret chain does not generate any revenue. \cite{longestchain} argues in a similar way, in that an attacker will only ever be able to maintain such a significant amount of hashing power over a short period of time. 
 
 According to \autoref{ranova} and the observable pattern in \autoref{ratio}, the differences between data means are significant at a level of 5\%. We therefore successfully reject $H_{0,R}$.
 \begin{table}[hb]
@@ -673,7 +640,7 @@ $R$ & 46 & 164.69 & 2.909e-15 \\ \hline
 \label{ranova}
 \end{table}
 \subsubsection{Confirmation length $C$} \label{consdisc}
-According to \autoref{conf:a}, an increasing amount of confirmations successfully reduces the $PDS$ as intended by the protocol. Regardless, the effect decreases significantly with increasing $R$ and, looking at \autoref{conf:b}, the confirmation length has no effect at all, once an attacker gains control of the majority of the network. This observation seems plausible since every trusted lead can be overcome by an attacker, once the majority is mining on the malicious chain. Overall, a merchant should aim to wait for as many confirmations as possible, in order to reduce the risk of double-spend attacks. The concrete amount of confirmations could be determined by the value of the merchant's product.
+According to \autoref{conf:a}, an increasing amount of confirmations successfully reduces the $PDS$ as intended by the protocol. Regardless, the effect decreases significantly with increasing $R$ and, looking at \autoref{conf:b}, the confirmation length has no effect at all, once an attacker gains control over the majority of computing power in the network. This observation seems plausible since every trusted lead can be overcome by an attacker, once the majority is mining on the malicious chain. Overall, a merchant should aim to wait for as many confirmations as possible, in order to reduce the risk of double-spend attacks. The concrete amount of confirmations could be determined by the value of the merchant's product.
 
 Combining the data of the three plots in \autoref{conf:a} enables us to perform a Kruskal-Wallis test (\autoref{canova}). Using the generated results, we successfully reject $H_{0,C}$ at a significance level of 5\%.
 \begin{table}[hb]
@@ -686,7 +653,7 @@ $C$ & 30 & 81.106 & 1.368e-06 \\ \hline
 \label{canova}
 \end{table}
 \subsubsection{Connection Latency $L_C$} \label{connlatsec}
-At the first glance, effects of increasing the connection latency $L_C$ seem to be similar to an increase of the confirmation length. The $PDS$ is reduced by longer latency times, but once an attacking ratio of 50\% is reached, the parameter shows no effect (\autoref{conn:b}). This phenomenon can be explained by looking at the nature of the connection latency. Assume Alice plans a DSA and experiences a latency time of $L_C$ to every trusted node. For her attack to be successful, she needs to gain a sufficient lead with her secret blockchain branch, in order to still be ahead of the trusted nodes' chain, once her malicous branch reaches the targeted network. During $L_C$, the trusted network might be able to catch up to Alice's branch, despite her possibly being in the lead at the time she sent her copy. However, if Alice controls more computing power than the defending network, she will always be able to generate an arbitrarily large lead over the trusted nodes' chain, thereby successfully overcoming $L_C$. The connection latency could be increased by the trusted network, by not revealing concrete addresses of peers in order to be more resistant against double-spend attacks. An attacker will always aim to gather as much information about trusted peers, to reduce the maximum $L_C$.
+At the first glance, effects of increasing the connection latency $L_C$ seem to be similar to an increase of the confirmation length. The $PDS$ is reduced by longer latency times, but once an attacking ratio of 50\% is reached, the parameter shows no effect (\autoref{conn:b}). This phenomenon can be explained by looking at the nature of the connection latency. Assume Alice plans a DSA and experiences a latency time of $L_C$ to every trusted node. For her attack to be successful, she needs to gain a sufficient lead with her secret blockchain branch, in order to still be ahead of the trusted nodes' chain, once her malicous branch reaches the targeted network. During $L_C$, the trusted network might be able to catch up to Alice's branch, despite her possibly being in the lead at the time she sent her copy. However, if Alice controls more computing power than the defending network, she will always be able to generate an arbitrarily large lead over the trusted nodes' chain, thereby successfully overcoming $L_C$. The connection latency could be increased by the trusted network, by not revealing concrete addresses of peers in order to hide them from potential attackers and be more resistant against double-spend attacks. An attacker will always aim to gather as much information about trusted peers, to reduce the maximum $L_C$.
 
 The Kruskal-Wallis test results in \autoref{conanova} indicate, that $L_C$ does in fact have a significant effect on $PDS$, allowing us to reject $H_{0,L_C}$ at our confidence level of 95\%.
 \begin{table}[hb]
@@ -699,7 +666,7 @@ $L_C$ & 37 &  120.36 & 9.409e-11 \\ \hline
 \label{conanova}
 \end{table}
 \subsubsection{Network Latency Times $L_{A,T}$}
-The visible effects of $L_{A}$ and $L_{T}$ on $PDS$ in \autoref{trulat} and \autoref{attlat} can be explained by observing the percentage of stale blocks generated during the experiments. At 0 milliseconds of latency between peers, no stale blocks are mined, which is plausible, since block propagation is instant and the participating nodes are in consent at all times. However, with increasing latency times, chances of two nodes mining a block, before being notified by each other, increase as well, therefore raising the amount of stale blocks. As stale blocks do not contribute to the length of the consented blockchain, their creation indicates a waste of computing power, especially when defending against double-spend attacks. Networks with high $PSB$ consequently possess less computing power than networks with a lower $PSB$ and the same number of nodes. \autoref{attlat} shows, how an increase of $L_{A}$ raises $PSB_A$, which in turn reduces the computing power possessed by the attacking network, resulting in a lower $PDS$. Since the distribution of computing power is represented by $R$ in our model, a translation along the $R$-axis for different $L_{A}$ can be observed in \autoref{attlat:b}. Consequently, an increase of $L_{A}$ leads to the decrease of $R$, whereas an increase of $L_{T}$ corresponds to an increase of $R$. We conclude, that when analyzing the distribution of computing power between attacking and defending networks, it is not sufficient to only consider the number of nodes, or the hashrate controlled by each network. Instead, it is also important to consider, how well nodes of a network are working together on a single consented blockchain and how many hashes are wasted towards the computation of stale blocks. The $PSB$ is therefore indicative of a network's mining efficiency, which is affecting their capability of extending the blockchain. 
+The visible effects of $L_{A}$ and $L_{T}$ on $PDS$ in \autoref{latplot} can be explained by observing the percentage of stale blocks generated during the experiments. At 0 milliseconds of latency between peers, no stale blocks are mined, which is plausible, since block propagation is instant and the participating nodes are in consent at all times. However, with increasing latency times, chances of two nodes mining a block, before being notified by each other, increase as well, therefore raising the amount of stale blocks. As stale blocks do not contribute to the length of the consented blockchain, their creation indicates a waste of computing power, especially when defending against double-spend attacks. Networks with high $PSB$ consequently possess less computing power than networks with a lower $PSB$ and the same number of nodes. \autoref{attlat:a} shows, how an increase of $L_{A}$ raises $PSB_A$, which in turn reduces the computing power possessed by the attacking network, resulting in a lower $PDS$. Since the distribution of computing power is represented by $R$ in our model, a translation along the $R$-axis for different $L_{A}$ can be observed in \autoref{attlat:b}. Consequently, an increase of $L_{A}$ leads to the decrease of $R$, whereas an increase of $L_{T}$ corresponds to an increase of $R$. We conclude, that when analyzing the distribution of computing power between attacking and defending networks, it is not sufficient to only consider the number of nodes, or the hashrate controlled by each network. Instead, it is also important to consider, how well nodes of a network are working together on a single consented blockchain and how many hashes are wasted towards the computation of stale blocks. The $PSB$ is therefore indicative of a network's mining efficiency, which is affecting their capability of extending the blockchain. 
 
 To maximize resistance against double-spend attacks, the trusted network should aim to reduce the overall latency in their network. It should also be considered that an attacker might use the same infrastructure and protocol as the trusted nodes. Additionally, the attacker might deliberately target the trusted node's communication with other attacks, in order to increase $L_{T}$ and the chance of double-spend attacks.
 
@@ -719,7 +686,7 @@ $L_T$ & 20 &  81.603 & 2.095e-09 \\ \hline
 Similar to $L_{A}$ and $L_{T}$, the graph density influences the amount of stale blocks mined by the networks, producing comparable effects on $PDS$. A network with low graph density contains less edges between nodes, which increases the average latency time between peers. Nodes of dense networks consequently work together in higher harmony, resulting in less computation being wasted towards mining stale blocks. Therefore, denser networks excel at extending their consented blockchain by increasing efficiency of sharing new blocks. Again, the effects on the functions of $R$ in \autoref{trudens:b} and \autoref{attdens:b} can be roughly described as a translation along the $R$-axis. An important observation can be seen in the fact, that a higher latency time appears to amplify the effects of the graph density on $PDS$ and vice versa. This seems plausible, since adding edges to a high latency network reduces overall latencies by more, compared to adding edges in an already low latency network. To increase resistance against DSAs, the trusted network should gather information about as many peers as possible, in order to increase density of the network and reduce latency times. This might again be influenced by an attacker using denial of service or similar attacks on the nodes' communication.
 
 The results of performing two Kruskal-Wallis tests on the data of \autoref{trudens:a} and \autoref{attdens:a} are listed in \autoref{densanova}. Since both $p$-values are below 5\%, the graph density can be considered to have a significant effect on $PDS$. We conclude in rejecting $H_{0,D_A}$ and $H_{0,D_T}$.
-\begin{table}[hb]
+\begin{table}[h!]
 \centering
 \begin{tabular}{|l|l|l|l|l|l|} \hline
 & Df & $\chi^{2}$ & p-value \\ \hline
@@ -754,34 +721,58 @@ $T$ & 8 &  21.637 & 0.005634 \\ \hline
 Although simulation and experimentation are generally accepted as ways to analyze
 and explore the behavior of diverse and dynamic systems, limitations of our results should be mentioned. During development of the simulator, simulation runs and the generation of results, some threads to the validity of our experiments were identified which will be summarized in the following section. 
 \subsubsection{Miner Scheduling}
-The simulation runs were carried out on two machines using \textit{Windows} and \textit{Unix} operating systems with access to \textit{Intel i5} processors. Since each miner is represented by a single thread, scheduling was required to simulate concurrency. Throughout the experiments it was realized, that sometimes certain mining threads were given processor access for too long, resulting in multiple blocks being mined by a single node, before other nodes were given the chance to generate a proof of work. This phenomenon is especially relevant during simulations of high difficulty targets, resulting in many blocks. Although access to the processing unit between trusted and attacking nodes converges over time, some nodes were able to generate a significant advantage by generating multiple blocks early during the simulation run. This issue has been addressed by synchronizing the mining threads after each node generated 10 random numbers toward their next proof of work. This way each node can only generate a maximum of 10 random numbers ahead of it's peers, reducing likelihood of multiple blocks due to the scheduling bias. Nevertheless, the phenomenon might still persist, especially when simulating very high difficulty targets ($T > 0.1$).
+The simulation runs were carried out on two machines using \textit{Windows} and \textit{Unix} operating systems with access to \textit{Intel i5} processors. Since each miner is represented by a single thread, scheduling was required to simulate concurrency. Throughout the experiments it was realized, that sometimes certain mining threads were given processor access for too long, resulting in multiple blocks being mined by a single node, before other nodes were given the chance to generate a proof of work. This phenomenon is especially relevant during simulations of high difficulty targets, which leads to many blocks being mined in quick succession. Although access to the processing unit between trusted and attacking nodes converges over time, some nodes were able to generate a significant advantage by generating multiple blocks early during the simulation run. This issue has been addressed by synchronizing the mining threads after each node generated 10 random numbers toward their next proof of work. This way, each node can only generate a maximum of 10 random numbers ahead of it's peers, reducing likelihood of multiple blocks due to the scheduling bias. Nevertheless, the phenomenon might still persist, especially when simulating very high difficulty targets ($T > 0.1$).
 \subsubsection{Constant Connection Strategy}
-The only implemented and tested connection strategy is the \textit{ConstantConnectionStrategy} presented in Section \ref{connstrat}. This strategy assumes that each attacking nodes is aware of every trusted node in the system and manages to establish a connection of constant latency to all targeted nodes. Although this is the strategy an attacker should strife for, some trusted peers could be masked by the network and unknown to an attacker. A connection strategy using a \textit{connection density} parameter is missing in our simulation, therefore such a scenario was not experimented. It is assumed that reducing the density of an attacker's connection to the trusted network produces similar effects as increasing the connection latency $L_C$.
+The only implemented and tested connection strategy is the \textit{ConstantConnectionStrategy} presented in Section \ref{connstrat}. This strategy assumes that each attacking nodes is aware of every trusted node in the system and manages to establish a connection of constant latency to all targeted nodes. Although this is the optimal strategy an attacker should strife for, some trusted peers could be masked by the network and unknown to an attacker. A connection strategy using a \textit{connection density} parameter is missing in our simulation, therefore such a scenario was not experimented. It is assumed that reducing the density of an attacker's connection to the trusted network produces similar effects as increasing the connection latency $L_C$.
 \subsubsection{Random Graph Creation}
-The pseudo-random graph created by the \textit{RndGraphStrategy} in Section \ref{rndgraphstrategy} is not perfectly random. Algorithm \ref{rndgraph} introduces a bias by always selecting a visited node for one end of a new edge. This could alter effects of parameters regarding the network topology, especially latency and graph density. Nevertheless, these effects are assumed to not be significant. Arguably, the proposed algorithm instead creates graphs, more closely related to real computer networks, by increasing the likelihood of graphs with centralized nodes \cite{stackoverflow}.
+The pseudo-random graph created by the \textit{RndGraphStrategy} in Section \ref{rndgraphstrategy} is not perfectly random. The strategy makes use of Algorithm \ref{rndgraph}, which introduces a bias to certain topologies. The algorithm initially creates a pseudo-random spanning tree of $n-1$ edges and $n$ nodes, by iterating through all nodes in the network. During each iteration, a random node of already visited and connected nodes is chosen to create an edge with a new node, which is not yet included in the graph. Since for each iteration, only visited nodes are considered for one end of a new edge, earlier nodes are more likely to receive a higher degree. This could alter effects of parameters regarding the network topology, especially latency and graph density. Nevertheless, these effects are assumed to not be significant. Arguably, the proposed algorithm instead creates graphs, that are more closely related to real computer networks, by increasing the likelihood of graphs with centralized nodes \cite{stackoverflow}.
+
 \subsubsection{Post-Hoc Analysis}
-The null hypotheses formulated in Section \ref{design} were tested using the Kruskal-Wallis test. The results of this test only confirm the existence of a significant difference between groups of the same treatment level, but do not explain, which specific pairs of groups are different. This information could be received by performing a post-hoc analysis, for example the Wilcoxon rank sum test. Looking at our data, such an analysis could be important, since some of the independent variables seem to not show any effect for specific treatment levels. This phenomenon can be observed in the data samples of \autoref{conf:b}, which remain 0 for multiple treatment levels, when testing a confirmation length of 14. Similarly the value of $PDS$ seems to be unchanged after reaching 100 in \autoref{ratio}. A post-hoc analysis might be necessary to determine significant intervals of the tested parameters.
+The null hypotheses formulated in Section \ref{design} were tested using the Kruskal-Wallis rank sum test. The results of this test only confirm the existence of a significant difference between groups of the same treatment level, but do not explain, which specific pairs of groups are different. This information could be received by performing a post-hoc analysis, for example the Wilcoxon rank sum test. Looking at our data, such an analysis could be important, since some of the independent variables seem to not show any effect for specific treatment levels. This phenomenon can be observed in the data samples of \autoref{conf:b}, which remain 0 for multiple treatment levels, when testing a confirmation length of 14. Similarly the value of $PDS$ seems to be unchanged after reaching 100 in \autoref{ratio}. A post-hoc analysis might be necessary to determine significant intervals of the tested parameters.
+
+\begin{algorithm}
+\caption{Creates a pseudo-random, undirected, connected graph with the given number of nodes and edges}\label{rndgraph}
+\begin{algorithmic}[1]
+\Procedure{RndGraph}{nodes, edges}
+\State $\textit{G} \gets \textit{(V, E)}$
+\State $i \gets 0$
+\State $V \cup \{i \}$
+\While {$++i < \textit{nodes}$}
+\State $u \gets \textit{rndElement(V)}$
+\State $V \cup \{i \}$
+\State $E \cup \{(i,u),(u,i) \}$
+\EndWhile
+\State $e \gets edges - (nodes-1)$
+\While {$e-- > 0$}
+\State $E' \gets \textit{missingEdges(G)}$
+\State $(x,y) \gets \textit{rndElement(E')}$
+\State $E \cup \{(x,y),(y,x) \}$
+\EndWhile
+\State \Return $G$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
 
 %------- chapter 6 -------
 
 \chapter{Model}
 \section{Approach}
-After analyzing our simulator through experimentation, we will now use the generated results to derive a mathematical model of double-spend resistance. The goal is to provide a compact description of the simulated system and allow further analysis of RADS by rearranging the proposed formula for specific parameters or by predicting the simulator's outcome. The challenge of finding a mathematical model, sufficiently representing the simulator's characteristics, relies on finding suitable basis functions to fit to the sampled data. This has been approached by initially chooseing a simple exponential basis function of a single parameter ($R$) and gradually expanding the model by including additional parameters of the simulator.  The resulting indefinite constants are fitted to our data using non-linear regressions \cite{nlxb}. In the following, lowercase variables represent the model's constants, whose fitted values are listed in \autoref{constants}. Uppercase variables correspond to the simulator's parameters tested in Chapter \ref{eval}. 
+After analyzing our simulator through experimentation, we will now use the observed results to derive an empirical model of double-spend resistance. The goal is to provide a compact description of the simulated system and to allow further analysis of RADS by rearranging the proposed formula for specific parameters or by predicting the simulator's outcome. The challenge of finding a mathematical model, sufficiently representing the simulator's characteristics, relies on finding suitable basis functions to fit to the sampled data. This has been approached by initially choosing a simple exponential basis function of a single parameter ($R$) and gradually expanding the model by including additional parameters of the simulator.  The resulting indefinite constants are fitted to our data using non-linear regressions \cite{nlxb}. In the following, lowercase variables represent the model's constants, whose fitted values are listed in \autoref{constants}. Uppercase variables correspond to the simulator's parameters tested in Chapter \ref{eval}. 
 
 The initial exponential model of $PDS$, represented as a function of $R$, is chosen to be exactly 100 if $R = 0.5$ (\autoref{r}). This is comparable to hashrate-based models presented in Chapter \ref{relatedwork}, whereas $R$ relates to the hashrate owned by the attackers ($qH$).  The model is subsequently fitted to the data of \autoref{ratio}, in order to calculate the constant value of $a$.
 \begin{equation}\label{r}
 PDS = 100 exp \left(a R- \frac{a}{2} \right)
 \end{equation}
-Using our observations of Sections \ref{consres} and \ref{consdisc}, we assume that the confirmation length $C$ has no effect once $R$ reaches 0.5, but leads to a reduction of $PDS$ as long as $R < 0.5$. This is also confirmed by the fitted curves of each experiment. All models of different confirmation lengths produce similar results around 100 $PDS$ at $R = 0.5$. This dampening effect on the function of $R$ is included in our formula by multiplying $C$ with the existing factor modeling $R$. To increase accuracy of the regression, two additional constants are included in the factor, which are fitted to the data of \autoref{conf}.
+Using our observations of Sections \ref{consres} and \ref{consdisc}, we conclude that the confirmation length $C$ has no effect once $R$ reaches 0.5, but leads to a reduction of $PDS$ as long as $R < 0.5$. This observation is also confirmed by the fitted curves of each experiment, as all models of different confirmation lengths produce similar results around 100 $PDS$ at $R = 0.5$. The resulting, dampening effect on the function of $R$ is included in our formula by multiplying $C$ with the existing factor modeling $R$. To increase accuracy of the regression, two additional constants are included in the factor, which are fitted to the data of \autoref{conf}.
 \begin{equation}\label{rc}
 PDS = 100 exp \left( \left( a R- \frac{a}{2} \right) \left( b_1C+b_2 \right) \right)
 \end{equation}
-As identified in Section \ref{connlatsec}, effects of $C$ and $L_C$ on $PDS$ are similar. We therefore add another factor containing $L_C$ to the argument of our exponential model in \autoref{rcl}, in order to produce a dampening effect on $R < 0.5$ comparable to $C$. The occurring indefinite constants $c_1$ and $c_2$ are again fitted to the data visualized in \autoref{conn}. 
+As identified in Section \ref{connlatsec}, effects of $C$ and $L_C$ on $PDS$ are similar. Analogous to \autoref{rc}, we therefore add another factor containing $L_C$ to the argument of our exponential model in \autoref{rcl}, in order to produce a dampening effect on $R < 0.5$ comparable to $C$. The occurring indefinite constants $c_1$ and $c_2$ are again fitted to the data visualized in \autoref{conn}. 
 
 \begin{equation}\label{rcl}
 PDS = 100 exp \left( \left( a R- \frac{a}{2} \right) \left( b_1C+b_2 \right) \left( c_1L_C+c_2 \right) \right)
 \end{equation}
-Because of the increase of stale blocks, high lantencies and a low graph density reduce the effective computing power of nodes working together on extending their network's blockchain. This change in computing power can be modeled by directly increasing or decreasing the value of $R$, depending on the difference between the qualities of trusted and attacking network topology. This leads to the visible translation along the $R$-axis in figures \ref{trulat:b} to \ref{attdens:b}, which is also supported by the parameters of the corresponding fitted curves.  Since the effects of $L$ and $D$ are amplified by each other, we include two terms of the form $\frac{L}{d_1(D+d_2)}$ in our model. While the term corresponding to the attacker's network is subtracted, in order to reduce the value of $R$, the trusted node's term is added to $R$, to produce the same effect but in opposite directions. The resulting constants $d_1$ and $d_2$ are fitted using the combined data of figures \ref{trulat} to \ref{attdens}.
+Because of the increase of stale blocks, high lantencies and a low graph density reduce the effective computing power of nodes working together on extending their network's blockchain. This change in computing power can be modeled by directly increasing or decreasing the value of $R$, depending on the difference between the qualities of trusted and attacking network topologies. Manipulating $R$ leads to the visible translation of the function along the $R$-axis in figures \ref{trulat:b} to \ref{attdens:b}, which is also supported by the parameters of the corresponding fitted curves.  Since the effects of $L$ and $D$ are amplified by each other, we include two terms of the form $\frac{L}{d_1(D+d_2)}$ in our model. While the term corresponding to the attacker's network is subtracted, in order to reduce the value of $R$, the trusted node's term is added to $R$, to produce the same effect but in opposite directions. The resulting constants $d_1$ and $d_2$ are fitted using the combined data of figures \ref{latplot} and \ref{densplot}.
 \begin{equation}\label{rcld}
 \begin{split}
 PDS = 100 exp \Biggl( & \left( a \left( R-\frac{ L_A}{d_1 \left( D_A+d_2 \right)}+\frac{ L_T}{d_1 \left( D_T+d_2 \right)} \right) - \frac{a}{2} \right) \\
@@ -815,16 +806,75 @@ $e_3$ & 0.00001 \\ \hline
 \label{constants}
 \end{table}
 \\
-\autoref{formula} represents the final formula of our double-spend model. Since our simulator returns the percentage of successful double-spend attacks $PDS \in [0, 100]$, values greater than 100 $PDS$ produced by the model indicate that all double-spend attempts are successful, similar to \autoref{min}. Low values of $PDS$ returned by the model consequently relate to a higher resistance against double-spend attacks.
+\autoref{formula} represents the final formula of the double-spend model. Since the simulator returns the percentage of successful double-spend attacks $PDS \in [0, 100]$, values greater than 100 $PDS$ produced by the model indicate that all double-spend attempts are successful, similar to \autoref{min}. Low values of $PDS$ returned by the model consequently relate to a higher resistance against double-spend attacks.
 \section{Comparison}
-Is rather an estimate of the simulator's result and can be used to make predictions without running the simulator. 
+To gain an impression of the correctness and accuracy of the proposed model in relation to the data generated by the simulator, we will revisit the plots created in Section \ref{results} and compare them with the results created by the model. In the following, results of our formula are visualized by solid lines, whereas dashed lines represent the fitted curves following models of the form $M(p)$ (Equation \ref{model}), whose parameters $A$ and $B$ are listed in \autoref{modelparams}. Curves corresponding to the same parameter configuration within the same plot are drawn using the same colors.
+\begin{figure}
+\centering
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/Confirmations/conf.png}
+\end{subfigure}
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/Confirmations/confrat.png}
+\end{subfigure}
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/bothlat.png}
+\end{subfigure}%
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/TruLatency/trurat.png}
+\end{subfigure}
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/AttLatency/attrat.png}
+\end{subfigure}
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/ConnLatency/conrat.png}
+\end{subfigure}
+\caption{Comparison of fitted curves and the proposed model}
+\label{comp}
+\end{figure}
 
+\begin{figure}
+\centering
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/TruDensity/trudens.png}
+\end{subfigure}
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/TruDensity/trudensrat.png}
+\end{subfigure}
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/AttDensity/attdens.png}
+\end{subfigure}%
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/AttDensity/attdensrat.png}
+\end{subfigure}
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/Difficulty/difficultyfit.png}
+\end{subfigure}
+\begin{subfigure}{.495\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{Comparison/Difficulty/diffrat.png}
+\end{subfigure}
+\caption{Comparison of fitted curves and the proposed model}
+\label{comp2}
+\end{figure}
+\section{Discussion}
+Although our model is not entirely accurate, the general profile of the plotted formula matches the individually fitted curves of the data. Some loss of precision can be explained by the chosen experiment design of Section \ref{design}. During the experiments, most parameters were set to the default configuration of \autoref{defaultval}. Since our model is ultimately fitted to the data generated by the experiments, the formula is expected to be especially accurate, as long as the applied parameters are close to the default configuration. Moving further away from this configuration consequently reduces the precision of our model, resulting in effects similar to the red curves in the first plot of \autoref{comp}. Overall, the model presents a good estimate of the simulator's results and can be used to make predictions without explicitly running the simulator. The model additionally allows mathematical analysis of double-spend resistance, for example by solving the equation for different model parameters.
 %------- chapter 7 -------
 
-\chapter{Summary}
+\chapter{Conclusion}
 
-\section{Status}
-
+\section{Summary}
 \subsection{Realized Goals}
 
 \subsection{Open Goals}
@@ -833,13 +883,13 @@ Is rather an estimate of the simulator's result and can be used to make predicti
 \item Network creation not perfectly random
 \item Post-hoc analysis of hypothesis tests
 \end{itemize}
-\section{Conclusion}
+\section{Discussion}
 \begin{itemize}
 \item Despite controlling more than 50\% of the network (> 50\% of hashrate), DSAs are not necessarily guaranteed, since effective value of nodes might be decreased by high latency/low density
 \item Contrary: DSAs with less than 50\% hashpower might be more likely than originally anticipated due to good quality in attacking network / bad quality in trusted network
 \item topology parameters might be influenced by ddos or other attacks
 \item $C$ and $L_C$ have no effect against majority attacks
-\item Latency and density do have an effect on $PDS$ but effect can be reduced by choosing a suitable difficulty target, resulting in low amounts of stale blocks.
+\item Latency and density do have an effect on $PDS$ but effect can be compensated by choosing a suitable difficulty target, resulting in low amounts of stale blocks.
 \end{itemize}
 \section{Future Work}
 \begin{itemize}
@@ -847,6 +897,7 @@ Is rather an estimate of the simulator's result and can be used to make predicti
 \item implement other attacks mentioned in related work on blockchains using framework
 \item identify missing parameters
 \item conduct more tests
+\item improve accuracy of model
 \item using result: economics of dsa?
 \end{itemize}
 
@@ -926,18 +977,14 @@ Figure & Subfig. & Curve & A & B \\ \hline
  							& 					   & blue & 0.0521142 & 15.1466 \\ \hline
 \multirow{2}{*}{\ref{conn}} & (a) & blue & 15.5299 & -0.00498 \\ \cline{2-5}	
  							& (b) & blue & 0.00721199 & 18.8602 \\ \hline
-\multirow{4}{*}{\ref{trulat}} & (a)				   & blue & 14.9187 & 0.0255749 \\ \cline{2-5}	
+\multirow{8}{*}{\ref{latplot}} & (a)				   & blue & 14.9187 & 0.0255749 \\ \cline{2-5}	
  							& \multirow{3}{*}{(b)} & blue & 1.473 & 12.675 \\
  							& 					   & red & 1.07143 & 11.0149 \\ 
- 							& 					   & green & 0.420428 & 10.2444 \\ \hline
-\multirow{4}{*}{\ref{attlat}} & (a)				   & blue & 23.3313 & -0.0461159 \\ \cline{2-5}	
- 							& \multirow{3}{*}{(b)} & green & 0.378158 & 12.0494 \\
+ 							& 					   & green & 0.420428 & 10.2444 \\ \cline{2-5}	
+							& (c)				   & blue & 23.3313 & -0.0461159 \\ \cline{2-5}	
+ 							& \multirow{3}{*}{(d)} & green & 0.378158 & 12.0494 \\
  							& 					   & red & 0.327956 & 9.76266 \\ 
  							& 					   & blue & 0.0214614 & 12.8297 \\ \hline
- 							\multirow{3}{*}{\ref{trudens}} & \multirow{2}{*}{(a)} & green & 124.344 & -2.14213 \\
- 							& 					   & blue & 26.2039 & -0.88155 \\ \cline{2-5}	
- 							& (b)				   & red & 2.12947 & 12.394 \\ 
- 							& 				       & blue & 0.678576 & 11.0063 \\ \hline
 \end{tabular}
 \end{table*}
 \begin{table}[tp]
@@ -945,11 +992,15 @@ Figure & Subfig. & Curve & A & B \\ \hline
 \begin{tabular}{|l|l|l|l|l|}
 \hline
 Figure & Subfig. & Curve & A & B \\ \hline
-\multirow{3}{*}{\ref{attdens}} & \multirow{2}{*}{(a)} & green & 6.9238 & 1.58297 \\
+\multirow{8}{*}{\ref{densplot}} & \multirow{2}{*}{(a)} & green & 124.344 & -2.14213 \\
+ 							& 					   & blue & 26.2039 & -0.88155 \\ \cline{2-5}	
+ 							& \multirow{2}{*}{(b)} & red & 2.12947 & 12.394 \\ 
+ 							& 				       & blue & 0.678576 & 11.0063 \\ \cline{2-5}
+							& \multirow{2}{*}{(c)} & green & 6.9238 & 1.58297 \\
  							& 					   & blue & 8.88541 & 0.68364 \\ \cline{2-5}	
- 							& (b)				   & blue & 0.20031 & 11.4103 \\ 
+ 							& \multirow{2}{*}{(d)} & blue & 0.20031 & 11.4103 \\ 
  							&    				   & red & 0.0459435 & 11.5084 \\ \hline
- 							\multirow{4}{*}{\ref{diff}} & (a)				   & blue & 21.5139 & 99.4238 \\ \cline{2-5}	
+\multirow{4}{*}{\ref{diff}} & (a)				   & blue & 21.5139 & 99.4238 \\ \cline{2-5}	
  							& \multirow{3}{*}{(b)} & green & 20.947 & 12.2793 \\
  							& 					   & red & 4.11228 & 6.57397 \\ 
  							& 					   & blue & 0.905035 & 9.54316 \\ \hline
