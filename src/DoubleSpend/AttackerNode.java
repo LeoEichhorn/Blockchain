@@ -23,7 +23,7 @@ public class AttackerNode extends Node{
     @Override
     protected boolean ignoreBlockchain(Blockchain newChain, Node sender) {
         //Only infested Blockchains (containing the altered transaction) are accepted
-        return !((DSBlockchain) newChain).isInfested();
+        return !((DSBlockchain) newChain).isDoubleSpending();
     }
 
     @Override

@@ -8,27 +8,27 @@ import Blockchain.Node;
  */
 public class DSBlockchain extends Blockchain{
     private int length;
-    private boolean infested;
+    private boolean doubleSpending;
     
-    public DSBlockchain(double difficulty, boolean infested) {
-        this(0, difficulty, infested);
+    public DSBlockchain(double difficulty, boolean doubleSpending) {
+        this(0, difficulty, doubleSpending);
     }
     
-    public DSBlockchain(int length, double difficulty, boolean infested) {
+    public DSBlockchain(int length, double difficulty, boolean doubleSpending) {
         super(difficulty);
         this.length = length;
-        this.infested = infested;
+        this.doubleSpending = doubleSpending;
     }
     
     @Override
     public DSBlockchain copy() {
-        return new DSBlockchain(length, difficulty, infested);
+        return new DSBlockchain(length, difficulty, doubleSpending);
     }
     
     @Override
     public void reset(Node owner) {
         length = 0;
-        infested = owner instanceof AttackerNode;
+        doubleSpending = owner instanceof AttackerNode;
     }
     
     @Override
@@ -42,16 +42,16 @@ public class DSBlockchain extends Blockchain{
     }
     
     /**
-     * A Blockchain is infested if it contains a malicious transaction indroduced
-     * by an Attacker to achieve a Double Spend.
+     * A Blockchain is double-spending if it contains a malicious transaction indroduced
+     * by an Attacker to himself.
      * @return Wether this Blockchain is infested.
      */
-    public boolean isInfested() {
-        return infested;
+    public boolean isDoubleSpending() {
+        return doubleSpending;
     }
     
     @Override
     public String toString() {
-        return String.format("[%d; %s]", length, infested?"infested":"safe");
+        return String.format("[%d; %s]", length, doubleSpending?"double-spending":"safe");
     } 
 }

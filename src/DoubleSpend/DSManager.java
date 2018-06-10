@@ -20,8 +20,8 @@ public class DSManager {
     //Number of Orphans created by the attacker network
     private int attackerOrphans;
     
-    //Number of infested Nodes in the Network
-    private AtomicInteger infested;
+    //Number of Nodes convinced by the double-spending transaction
+    private AtomicInteger convinced;
 
     private Parameters p;
     private DSSimulation sim;
@@ -35,16 +35,16 @@ public class DSManager {
         this.maxTrustedChain  = 0;
         this.trustedOrphans = 0;
         this.attackerOrphans = 0;
-        this.infested = new AtomicInteger();
+        this.convinced = new AtomicInteger();
     }
     
     /**
-     * Called once a trusted Node is newly infested. A Node is considered infested
-     * if it mines on an infested Blockchain.
-     * The double spend attempt is considered succesful if all trusted Nodes have been infested.
+     * Called once a trusted Node is newly convinced of the double-spending transaction. 
+     * A Node is considered to be convinced once it mines on a Blockchain containing the malicous transaction.
+     * The double spend attempt is considered succesful if all trusted Nodes have been convinced.
      */
-    public void addInfested(){
-        if(infested.incrementAndGet() == p.getTrustedNodes()){
+    public void addConvinced(){
+        if(convinced.incrementAndGet() == p.getTrustedNodes()){
             synchronized (this) {
                 sim.report(true, maxAttackerChain, maxTrustedChain, attackerOrphans, trustedOrphans);
                 reset();
@@ -53,10 +53,10 @@ public class DSManager {
     }
     
     /**
-     * Called once a trusted Node is no longer infested.
+     * Called once a trusted Node is no longer convinced of the double-spending transaction.
      */
-    public void removeInfested(){
-        infested.decrementAndGet();
+    public void removeConvinced(){
+        convinced.decrementAndGet();
     }
     
     /**
@@ -106,7 +106,7 @@ public class DSManager {
     }
     
     private void reset() {
-        infested = new AtomicInteger();
+        convinced = new AtomicInteger();
         maxAttackerChain = maxTrustedChain = 0;
         attackerOrphans = trustedOrphans = 0;
     }
