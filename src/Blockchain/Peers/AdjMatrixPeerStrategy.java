@@ -20,9 +20,15 @@ public class AdjMatrixPeerStrategy extends GraphPeerStrategy{
     
     @Override
     public long connectPeers(ArrayList<Node> nodes) {
+        for(Node n : nodes)
+            n.resetPeers();
         ArrayList<LinkedList<GraphUtil.EdgeTo>> adj 
                 = GraphUtil.fromAdjMatrix(m);
         return connectPeersInGraph(adj, nodes);
     }
 
+    @Override
+    public String toString() {
+        return "ADJACENCY";
+    }
 }

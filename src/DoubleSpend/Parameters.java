@@ -1,11 +1,10 @@
 package DoubleSpend;
 
-import Blockchain.Peers.AdjMatrixPeerStrategy;
 import Blockchain.Peers.ConstantPeerStrategy;
 import Blockchain.Peers.EuclideanPeerStrategy;
 import Blockchain.Peers.PeerStrategy;
 import Blockchain.Peers.RndGraphPeerStrategy;
-import Blockchain.Util.Parameter;
+import Blockchain.Util.Randomizable;
 import Blockchain.Util.Util;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -87,18 +86,6 @@ public class Parameters {
         }
         maxLength = (int) Math.ceil(1 / (epsilon * 100));
     }
-    
-    /**
-     * Generates the next set of randomized Parameters
-     */
-    public void next() {
-        confirmations.next();
-        trustedLatency.next();
-        attackerLatency.next();
-        connectionLatency.next();
-        trustedGraphDensity.next();
-        attackerGraphDensity.next();
-    }
 
     public int getTrustedNodes() {
         return trustedNodes;
@@ -114,6 +101,10 @@ public class Parameters {
 
     public int getConfirmations() {
         return confirmations.getValue();
+    }
+    
+    public IntParameter getConfirmationsIntParameter(){
+        return confirmations;
     }
 
     public int getTrustedLatency() {
@@ -196,7 +187,26 @@ public class Parameters {
         return connStrat;
     }
     
-    public static class IntParameter implements Parameter<Integer> {
+    @Override
+    public String toString() {
+        String conf;
+        if(confirmations.isRandomized()){
+            Integer[] b = confirmations.getBounds();
+            conf = "random["+b[0]+";"+b[1]+"]";
+        }else{
+            conf = ""+confirmations.getValue();
+        }
+        return String.format("Trusted nodes: %d, Attacking nodes: %d\n"
+                + "Difficulty: %s, Confirmation length: %s\n"
+                + "Trusted Strategy: %s\n"
+                + "Attacker Strategy: %s\n"
+                + "Connection Strategy: %s\n"
+                + "Runs: %d, Epsilon: %s"
+                , trustedNodes, attackerNodes, ""+difficulty, conf
+                , tPeerStrat, aPeerStrat, connStrat, runs, ""+epsilon);
+    }
+    
+    public static class IntParameter implements Randomizable<Integer> {
         private int value;
         private int upper;
         private int lower;
@@ -222,6 +232,16 @@ public class Parameters {
             return value;
         }
         
+        @Override
+        public Integer[] getBounds(){
+            return new Integer[]{lower, upper};
+        }
+        
+        @Override
+        public boolean isRandomized(){
+            return randomized;
+        }
+        
         private void randomize(int lower, int upper){
             randomized = true;
             this.rng = new Random();
@@ -229,14 +249,15 @@ public class Parameters {
             this.lower = lower;
         }
         
-        public int next(){
+        @Override
+        public Integer next(){
             if(!randomized || upper < lower)
                 return value;
             return value = rng.nextInt((upper - lower) + 1) + lower;
         }  
     }
     
-    public static class DoubleParameter implements Parameter<Double> {
+    public static class DoubleParameter implements Randomizable<Double> {
         private double value;
         private double upper;
         private double lower;
@@ -262,6 +283,16 @@ public class Parameters {
             return value;
         }
         
+        @Override
+        public Double[] getBounds(){
+            return new Double[]{lower, upper};
+        }
+        
+        @Override
+        public boolean isRandomized(){
+            return randomized;
+        }
+        
         private void randomize(double lower, double upper){
             randomized = true;
             this.rng = new Random();
@@ -269,7 +300,8 @@ public class Parameters {
             this.lower = lower;
         }
         
-        public double next(){
+        @Override
+        public Double next(){
             if(!randomized || upper < lower)
                 return value;
             return value = lower + (upper - lower) * rng.nextDouble();
@@ -326,86 +358,120 @@ public class Parameters {
         }
 
         public ParametersBuilder setTrustedNodes(int trustedNodes) {
+            if(trustedNodes <= 0)
+                throw new IllegalArgumentException("Non positive number of trusted Nodes");
             this.trustedNodes = trustedNodes;
             return this;
         }
 
         public ParametersBuilder setAttackerNodes(int attackerNodes) {
+            if(attackerNodes <= 0)
+                throw new IllegalArgumentException("Non positive number of trusted Nodes");
             this.attackerNodes = attackerNodes;
             return this;
         }
 
         public ParametersBuilder setDifficulty(double difficulty) {
+            if(difficulty <= 0 || difficulty >= 1)
+                throw new IllegalArgumentException("Difficulty not in (0, 1)");
             this.difficulty = difficulty;
             return this;
         }
 
         public ParametersBuilder setConfirmations(int confirmations) {
+            if(confirmations < 0)
+                throw new IllegalArgumentException("Negative confirmation length");
             this.confirmations.setValue(confirmations);
             return this;
         }
         
         public ParametersBuilder randomizeConfirmations(int lower, int upper) {
+            if(lower < 0 || lower > upper)
+                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.confirmations.randomize(lower, upper);
             return this;
         }
 
         public ParametersBuilder setTrustedLatency(int trustedLatency) {
+            if(trustedLatency < 0)
+                throw new IllegalArgumentException("Negative trusted latency");
             this.trustedLatency.setValue(trustedLatency);
             return this;
         }
         
         public ParametersBuilder randomizeTrustedLatency(int lower, int upper) {
+            if(lower < 0 || lower > upper)
+                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.trustedLatency.randomize(lower, upper);
             return this;
         }
 
         public ParametersBuilder setAttackerLatency(int attackerLatency) {
+            if(attackerLatency < 0)
+                throw new IllegalArgumentException("Negative attacker latency");
             this.attackerLatency.setValue(attackerLatency);
             return this;
         }
         
         public ParametersBuilder randomizeAttackerLatency(int lower, int upper) {
+            if(lower < 0 || lower > upper)
+                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.attackerLatency.randomize(lower, upper);
             return this;
         }
 
         public ParametersBuilder setConnectionLatency(int connectionLatency) {
+            if(connectionLatency < 0)
+                throw new IllegalArgumentException("Negative connection latency");
             this.connectionLatency.setValue(connectionLatency);
             return this;
         }
         
         public ParametersBuilder randomizeConnectionLatency(int lower, int upper) {
+            if(lower < 0 || lower > upper)
+                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.connectionLatency.randomize(lower, upper);
             return this;
         }
 
         public ParametersBuilder setTrustedGraphDensity(double trustedGraphDensity) {
+            if(trustedGraphDensity < 0)
+                throw new IllegalArgumentException("Negative trusted graph density");
             this.trustedGraphDensity.setValue(trustedGraphDensity);
             return this;
         }
         
         public ParametersBuilder randomizeTrustedGraphDensity(double lower, double upper) {
+            if(lower < 0 || lower > upper)
+                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.trustedGraphDensity.randomize(lower, upper);
             return this;
         }
 
         public ParametersBuilder setAttackerGraphDensity(double attackerGraphDensity) {
+            if(attackerGraphDensity < 0)
+                throw new IllegalArgumentException("Negative attacker graph density");
             this.attackerGraphDensity.setValue(attackerGraphDensity);
             return this;
         }
         
         public ParametersBuilder randomizeAttackerGraphDensity(double lower, double upper) {
+            if(lower < 0 || lower > upper)
+                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.attackerGraphDensity.randomize(lower, upper);
             return this;
         }
         
         public ParametersBuilder setRuns(int runs) {
+            if(runs <= 0)
+                throw new IllegalArgumentException("Non positive number of runs");
             this.runs = runs;
             return this;
         }
 
         public ParametersBuilder setEpsilon(double epsilon) {
+            if(epsilon <= 0 || epsilon >= 1)
+                throw new IllegalArgumentException("Epsilon not in (0, 1)");
             this.epsilon = epsilon;
             return this;
         }
@@ -605,7 +671,7 @@ public class Parameters {
                 case EUCLIDEAN:
                     return new EuclideanPeerStrategy(attackerLatency);
                 case RANDOM:
-                    return new RndGraphPeerStrategy(attackerNodes, attackerGraphDensity, attackerLatency);
+                    return new RndGraphPeerStrategy(attackerGraphDensity, attackerLatency);
                 default:
                     return null;
             }
@@ -618,7 +684,7 @@ public class Parameters {
                 case EUCLIDEAN:
                     return new EuclideanPeerStrategy(trustedLatency);
                 case RANDOM:
-                    return new RndGraphPeerStrategy(trustedNodes, trustedGraphDensity, trustedLatency);
+                    return new RndGraphPeerStrategy(trustedGraphDensity, trustedLatency);
                 default:
                     return null;
             }

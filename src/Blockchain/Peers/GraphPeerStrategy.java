@@ -25,4 +25,6 @@ public abstract class GraphPeerStrategy extends PeerStrategy{
         return max;
     }
 
+    @Override
+    public abstract String toString();
 }

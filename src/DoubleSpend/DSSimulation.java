@@ -3,7 +3,6 @@ package DoubleSpend;
 import Blockchain.Network;
 import Blockchain.Node;
 import Blockchain.Peers.PeerStrategy;
-import Blockchain.Peers.RndGraphPeerStrategy;
 import Blockchain.Util.Logger;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -21,9 +20,9 @@ public class DSSimulation {
     private volatile int success;
     private volatile int failure;
     
-    //Overall mined Blocks and Orphans by trusted and attacker network
+    //Overall mined blocks and stale blocks by trusted and attacker network
     private volatile int aBlocks, tBlocks;
-    private volatile int aOrphans, tOrphans;
+    private volatile int aStaleBlocks, tStaleBlocks;
     
     private PeerStrategy trustedPeerStrat;
     private PeerStrategy attackerPeerStrat;
@@ -73,8 +72,6 @@ public class DSSimulation {
     }
     
     private void createPeers() {
-        for(Node n : nodes)
-            n.resetPeers();
         long maxTrustedLatency = trustedPeerStrat.connectPeers(trustedNodes);
         long maxAttackerLatency = attackerPeerStrat.connectPeers(attackerNodes);
         long maxLatency = Math.max(maxTrustedLatency, maxAttackerLatency);
@@ -88,16 +85,16 @@ public class DSSimulation {
      */  
     public void start() {
         while(success+failure < p.getRuns()){
-            p.next();
             createPeers();
+            p.getConfirmationsIntParameter().next();
             network.run();
         }
         
         Logger.log(Level.INFO, String.format(
                 "Successful Double Spends: %d\n"
-                + "Trusted Orphan Rate: %s\n"
-                + "Attacker Orphan Rate: %s",
-                success, ""+((double)tOrphans)/tBlocks, ""+((double)aOrphans)/aBlocks
+                + "Ratio of trusted stale blocks: %s\n"
+                + "Ratio of attacker stale blocks: %s",
+                success, ""+((double)tStaleBlocks)/tBlocks, ""+((double)aStaleBlocks)/aBlocks
         ));
     }
     
@@ -107,11 +104,11 @@ public class DSSimulation {
      * @param successful Wether the Double Spend attempt was successful
      * @param attackerChain The final length of the attacker fork of the Blockchain
      * @param trustedChain The final length of the Blockchain created by the Network of trusted Nodes
-     * @param attackerOrphans The number of orphan blocks mined by the attacking Network
-     * @param trustedOrphans The number of orphan blocks mined by the trusted Network
+     * @param aSB The number of stale blocks mined by the attacking Network
+     * @param tSB The number of stale blocks mined by the trusted Network
      */
     public void report(boolean successful, int attackerChain, int trustedChain, 
-            int attackerOrphans, int trustedOrphans) {
+            int aSB, int tSB) {
         
         if(successful){
             success++;
@@ -123,10 +120,10 @@ public class DSSimulation {
                     success+failure,trustedChain,attackerChain));
         }
         
-        aBlocks += attackerChain+attackerOrphans;
-        tBlocks += trustedChain+trustedOrphans;
-        aOrphans += attackerOrphans;
-        tOrphans += trustedOrphans;
+        aBlocks += attackerChain+aSB;
+        tBlocks += trustedChain+tSB;
+        aStaleBlocks += aSB;
+        tStaleBlocks += tSB;
         
         network.stop();
     }

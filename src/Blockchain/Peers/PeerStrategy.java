@@ -11,4 +11,7 @@ public abstract class PeerStrategy {
      * @return The maximum latency between any two peers in the created network
      */
     public abstract long connectPeers(ArrayList<Node> nodes);
+    
+    @Override
+    public abstract String toString();
 }

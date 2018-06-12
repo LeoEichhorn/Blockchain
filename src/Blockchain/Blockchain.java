@@ -8,6 +8,8 @@ public abstract class Blockchain implements Comparable<Blockchain>{
      * @param difficulty The difficulty to add a Block to this Blockchain
      */
     public Blockchain(double difficulty) {
+        if(difficulty <= 0 || difficulty >= 1)
+            throw new IllegalArgumentException("Difficulty not in (0, 1)");
         this.difficulty = difficulty;
     }
     

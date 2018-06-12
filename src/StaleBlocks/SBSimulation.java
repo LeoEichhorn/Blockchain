@@ -1,4 +1,4 @@
-package OrphanRate;
+package StaleBlocks;
 
 import Blockchain.Network;
 import Blockchain.Node;
@@ -8,40 +8,33 @@ import Blockchain.Util.Logger;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
-/**
- * Simulation of a Network of Trusted and Attacking Nodes, where Attacking Nodes
- * are trying to achive double spends by indroducing malicious transaktions and 
- * mining on private forks of the Blockchain.
- */
-public class ORSimulation {
-    private Parameters p;
+public class SBSimulation {
     private Network network;
-    private ORManager orm;
+    private SBManager orm;
     
-    //Overall mined Blocks and Orphans by network
+    //Overall mined blocks and stale blocks by network
     private int blocks;
-    private int orphans;
+    private int staleBlocks;
     
     private PeerStrategy peerStrategy;
     
     private ArrayList<Node> nodes;
     
     /**
-     * Creates a new Simulation for Orphan rates.
+     * Creates a new Simulation for stale block rates.
      * @param p The Parameters of this Simulation
      * @param peerStrategy The Strategy of creating the network
      */
-    public ORSimulation(Parameters p, PeerStrategy peerStrategy) {
+    public SBSimulation(Parameters p, PeerStrategy peerStrategy) {
         
-        this.p = p;
         this.network = new Network();
-        this.orm = new ORManager(p, this, network);
+        this.orm = new SBManager(p, this, network);
         
         this.peerStrategy = peerStrategy;
         this.nodes = new ArrayList<>(p.getNodes());
 
         for (int i = 0; i < p.getNodes(); i++) {
-            nodes.add(new ORNode(orm, network, p, "Node "+i));
+            nodes.add(new SBNode(orm, network, p, "Node "+i));
         }
 
         network.setNodes(nodes);
@@ -62,10 +55,10 @@ public class ORSimulation {
         network.run();
         
         Logger.log(Level.INFO, String.format(
-                "Orphans: %d\n"
+                "Stale blocks: %d\n"
                 + "Blocks: %d\n"
-                + "Orphan Rate: %s",
-                orphans, blocks, ""+((double)orphans)/blocks
+                + "Stale block Rate: %s",
+                staleBlocks, blocks, ""+((double)staleBlocks)/blocks
         ));
     }
     
@@ -73,11 +66,11 @@ public class ORSimulation {
      * Called after (un-)successful Double Spend attempt. Stops the network so
      * a new run of the Simulation can be started.
      * @param chainLength
-     * @param orphanedBlocks
+     * @param staleBlocks
      */
-    public void report(int chainLength, int orphanedBlocks) {
-        blocks = chainLength+orphanedBlocks;
-        orphans = orphanedBlocks;
+    public void report(int chainLength, int staleBlocks) {
+        blocks = chainLength+staleBlocks;
+        this.staleBlocks = staleBlocks;
         
         network.stop();
     }

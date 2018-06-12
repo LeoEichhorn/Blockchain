@@ -1,16 +1,16 @@
-package OrphanRate;
+package StaleBlocks;
 
 import Blockchain.Blockchain;
 import Blockchain.Network;
 import Blockchain.Node;
 import DoubleSpend.Parameters;
 
-public class ORNode extends Node{
+public class SBNode extends Node{
 
-    private ORManager orm;
+    private SBManager orm;
     
-    public ORNode(ORManager orm, Network network, Parameters p, String name) {
-        super(network, new ORBlockchain(p.getDifficulty()), name);
+    public SBNode(SBManager orm, Network network, Parameters p, String name) {
+        super(network, new SBBlockchain(p.getDifficulty()), name);
         this.orm = orm;
     }
     

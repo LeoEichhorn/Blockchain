@@ -15,4 +15,6 @@ public abstract class ConnectionStrategy {
      * @return The maximum latency between all created connections
      */
     public abstract long connectPeers(ArrayList<Node> attackers, ArrayList<Node> trusted);
+    @Override
+    public abstract String toString();
 }

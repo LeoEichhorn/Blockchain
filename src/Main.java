@@ -2,7 +2,7 @@ import DoubleSpend.Parameters;
 import DoubleSpend.Parameters.*;
 import DoubleSpend.DSSimulation;
 import Blockchain.Peers.*;
-import OrphanRate.ORSimulation;
+import StaleBlocks.SBSimulation;
 import java.io.IOException;
 
 public class Main {
@@ -16,7 +16,6 @@ public class Main {
                         .build();
             } else {
                 p = (new ParametersBuilder())
-                        .setAttackerPeerStrategy(PeerStrategyEnum.CONSTANT)
                         .loadFromProperty("parameters.txt")
                         .build();
             }
@@ -28,26 +27,20 @@ public class Main {
     }
 
     public static void doubleSpend(Parameters p) {
-        System.out.printf("Attempting %d double spends on a Blockchain with\n"
-                + "mining difficulty %s and %d confirmations.\n"
-                + "Network: %d trusted and %d attacking nodes.\n"
-                + "MaxLead: %d, MaxLength: %d\n",
-                p.getRuns(), "" + p.getDifficulty(), p.getConfirmations(),
-                p.getTrustedNodes(), p.getAttackerNodes(),
-                p.getMaxLead(), p.getMaxLength());
+        System.out.printf("Starting new double-spend simulation with parameters:\n%s\n",p);
         DSSimulation sim = new DSSimulation(p);
         sim.start();
     }
     
-    public static void orphanRate(Parameters p) {
-        System.out.printf("Measuring Orphan Rate in %d mined Blocks\n"
+    public static void staleBlocks(Parameters p) {
+        System.out.printf("Measuring stale Block Rate in %d mined Blocks\n"
                 + "by a Network with mining difficulty %s and %d Nodes.\n",
                 p.getMaxLength(), "" + p.getDifficulty(), p.getNodes());
 
-        PeerStrategy ORPeerStrategy = new RndGraphPeerStrategy(p.getNodes(), 
+        PeerStrategy ORPeerStrategy = new RndGraphPeerStrategy(
                 new DoubleParameter(0.7), new IntParameter(50));
         
-        ORSimulation sim = new ORSimulation(p, ORPeerStrategy);
+        SBSimulation sim = new SBSimulation(p, ORPeerStrategy);
         sim.start();
     }
 

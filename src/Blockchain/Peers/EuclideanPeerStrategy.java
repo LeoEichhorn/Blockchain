@@ -1,13 +1,13 @@
 package Blockchain.Peers;
 
 import Blockchain.Node;
-import Blockchain.Util.Parameter;
+import Blockchain.Util.Randomizable;
 import Blockchain.Util.Util;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class EuclideanPeerStrategy extends PeerStrategy{
-    private Parameter<Integer> side;
+    private Randomizable<Integer> side;
     private Random rnd;
 
     /**
@@ -16,13 +16,18 @@ public class EuclideanPeerStrategy extends PeerStrategy{
      * proportional to the nodes' euclidean distance with constant standard deviation.
      * @param side The width and height of the square.
      */
-    public EuclideanPeerStrategy(Parameter<Integer> side) {
+    public EuclideanPeerStrategy(Randomizable<Integer> side) {
+        if(side.getValue()<0||side.getBounds()[0]<0)
+            throw new IllegalArgumentException("Negative side length");
         this.side = side;
         this.rnd = new Random();
     }
 
     @Override
     public long connectPeers(ArrayList<Node> nodes) {
+        for(Node n : nodes)
+            n.resetPeers();
+        side.next();
         ArrayList<Point> points = new ArrayList<>(nodes.size());
         for(int i = 0; i < nodes.size(); i++){
             points.add(rndPoint());
@@ -61,5 +66,17 @@ public class EuclideanPeerStrategy extends PeerStrategy{
         public String toString() {
             return String.format("(%d,%d)", x, y);
         }
+    }
+    
+    @Override
+    public String toString() {
+        String r = "EUCLIDEAN, Side length: ";
+        if(side.isRandomized()){
+            Integer[] b = side.getBounds();
+            r += "random["+b[0]+";"+b[1]+"]";
+        }else{
+            r += side.getValue();
+        }
+        return r;
     }
 }

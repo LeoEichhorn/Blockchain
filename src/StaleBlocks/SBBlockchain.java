@@ -1,22 +1,22 @@
-package OrphanRate;
+package StaleBlocks;
 
 import Blockchain.*;
 
-public class ORBlockchain extends Blockchain{
+public class SBBlockchain extends Blockchain{
     protected int length;
 
-    public ORBlockchain(double difficulty) {
+    public SBBlockchain(double difficulty) {
         this(0, difficulty);
     }
     
-    public ORBlockchain(int length, double difficulty) {
+    public SBBlockchain(int length, double difficulty) {
         super(difficulty);
         this.length = length;
     }
     
     @Override
-    public ORBlockchain copy() {
-        return new ORBlockchain(length, difficulty);
+    public SBBlockchain copy() {
+        return new SBBlockchain(length, difficulty);
     }
 
     @Override
