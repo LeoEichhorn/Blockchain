@@ -26,7 +26,7 @@ public class EuclideanPeerStrategy extends PeerStrategy{
     @Override
     public long connectPeers(ArrayList<Node> nodes) {
         for(Node n : nodes)
-            n.resetPeers();
+            n.clearPeers();
         side.next();
         ArrayList<Point> points = new ArrayList<>(nodes.size());
         for(int i = 0; i < nodes.size(); i++){

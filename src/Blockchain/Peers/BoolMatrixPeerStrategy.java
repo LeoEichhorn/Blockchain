@@ -31,7 +31,7 @@ public class BoolMatrixPeerStrategy extends GraphPeerStrategy{
     @Override
     public long connectPeers(ArrayList<Node> nodes) {
         for(Node n : nodes)
-            n.resetPeers();
+            n.clearPeers();
         ArrayList<LinkedList<GraphUtil.EdgeTo>> adj 
                 = GraphUtil.fromBoolMatrix(m, mean.next(), symmetric); 
         return connectPeersInGraph(adj, nodes);

@@ -44,7 +44,7 @@ public class DSBlockchain extends Blockchain{
     /**
      * A Blockchain is double-spending if it contains a malicious transaction indroduced
      * by an Attacker to himself.
-     * @return Wether this Blockchain is infested.
+     * @return Wether this Blockchain is double-spending.
      */
     public boolean isDoubleSpending() {
         return doubleSpending;

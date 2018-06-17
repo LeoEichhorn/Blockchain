@@ -87,102 +87,170 @@ public class Parameters {
         maxLength = (int) Math.ceil(1 / (epsilon * 100));
     }
 
+    /**
+     * @return The number of Nodes in the trusted network, mining on the longest chain they are aware of.
+     */
     public int getTrustedNodes() {
         return trustedNodes;
     }
-
+    
+    /**
+     * @return The number of Nodes in the attacking network, mining on a secret branch containing a double-spending transaction.
+     */
     public int getAttackerNodes() {
         return attackerNodes;
     }
 
+    /**
+     * @return The difficulty target of mining a single block.
+     */
     public double getDifficulty() {
         return difficulty;
     }
 
+    /**
+     * @return The number of confirmations required by the target merchant to consider the payment as valid.
+     */
     public int getConfirmations() {
         return confirmations.getValue();
     }
-    
+        
+    /**
+     * @return The randomizable parameter corresponding to the number of confirmations required by the target merchant.
+     */
     public IntParameter getConfirmationsIntParameter(){
         return confirmations;
     }
-
+    
+    /**
+     * @return The mean latency in the trusted network.
+     */
     public int getTrustedLatency() {
         return trustedLatency.getValue();
     }
-    
+        
+    /**
+     * @return The randomizable parameter corresponding to the mean latency in the trusted network.
+     */
     public IntParameter getTrustedLatencyParameter() {
         return trustedLatency;
     }
-
+        
+    /**
+     * @return The mean latency in the attacking network.
+     */
     public int getAttackerLatency() {
         return attackerLatency.getValue();
     }
-    
+            
+    /**
+     * @return The randomizable parameter corresponding to the mean latency in the attacking network.
+     */
     public IntParameter getAttackerLatencyParameter() {
         return attackerLatency;
     }
-
+        
+    /**
+     * @return The mean latency between the trusted and the attacking network.
+     */
     public int getConnectionLatency() {
         return connectionLatency.getValue();
     }
-    
+            
+    /**
+     * @return The randomizable parameter corresponding to the mean latency between the trusted and the attacking network.
+     */
     public IntParameter getConnectionLatencyParameter() {
         return connectionLatency;
     }
-    
+                
+    /**
+     * @return The graph density of the trusted network.
+     */
     public double getTrustedGraphDensity() {
         return trustedGraphDensity.getValue();
     }
-    
+                
+    /**
+     * @return The randomizable parameter corresponding to the graph density of the trusted network.
+     */
     public DoubleParameter getTrustedGraphDensityParameter() {
         return trustedGraphDensity;
     }
-    
+                    
+    /**
+     * @return The graph density of the attacking network.
+     */
     public double getAttackerGraphDensity() {
         return attackerGraphDensity.getValue();
     }
-    
+                    
+    /**
+     * @return The randomizable parameter corresponding to the graph density of the attacking network.
+     */
     public DoubleParameter getAttackerGraphDensityParameter() {
         return attackerGraphDensity;
     }
-    
+                        
+    /**
+     * @return The number of double-spend attempts during the simulation.
+     */
     public int getRuns() {
         return runs;
     }
-
+                    
+    /**
+     * @return The fault-tolerance defining the maximum trusted lead and blockchain length resulting in a failed double-spend attempt.
+     */
     public double getEpsilon() {
         return epsilon;
     }
-
-    public double getProbCatchUpByOne() {
-        return probCatchUpByOne;
-    }
-
+                    
+    /**
+     * @return The maximum lead by the trusted nodes' blockchain over the attackers, before the attempt is considered to be unsuccessful
+     */
     public int getMaxLead() {
         return maxLead;
     }
-
+                    
+    /**
+     * @return The maximum length leading to a failed attempt when reached by any blockchain.
+     */
     public int getMaxLength() {
         return maxLength;
     }
-
+                    
+    /**
+     * @return The total number of nodes in both networks.
+     */ 
     public int getNodes() {
         return nodes;
     }
-    
+                    
+    /**
+     * @return The current logging level defining the amount of console output.
+     */
     public Level getLogLevel() {
         return logLevel;
     }
-
+                    
+    /**
+     * @return The PeerStrategy used by the trusted network.
+     */
     public PeerStrategy getTrustedPeerStrategy() {
         return tPeerStrat;
     }
-    
+                        
+    /**
+     * @return The PeerStrategy used by the attacking network.
+     */
     public PeerStrategy getAttackerPeerStrategy() {
         return aPeerStrat;
     }
-
+                    
+    /**
+     * @return The ConnectionStrategy used by the attacking network to connect to the trusted network.
+     */
     public ConnectionStrategy getConnectionStrategy() {
         return connStrat;
     }
@@ -214,8 +282,8 @@ public class Parameters {
         private boolean randomized;
         
         /**
-         * Creates a new randomizable integer Parameter
-         * @param value The initial value of this Parameter
+         * Creates a new randomizable integer parameter
+         * @param value The initial value of this parameter
          */
         public IntParameter(int value){
             this.value = value;
@@ -243,6 +311,8 @@ public class Parameters {
         }
         
         private void randomize(int lower, int upper){
+            if(lower < 0 || lower > upper)
+                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             randomized = true;
             this.rng = new Random();
             this.upper = upper;
@@ -251,7 +321,7 @@ public class Parameters {
         
         @Override
         public Integer next(){
-            if(!randomized || upper < lower)
+            if(!randomized || upper <= lower)
                 return value;
             return value = rng.nextInt((upper - lower) + 1) + lower;
         }  
@@ -294,6 +364,8 @@ public class Parameters {
         }
         
         private void randomize(double lower, double upper){
+            if(lower < 0 || lower > upper)
+                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             randomized = true;
             this.rng = new Random();
             this.upper = upper;
@@ -302,7 +374,7 @@ public class Parameters {
         
         @Override
         public Double next(){
-            if(!randomized || upper < lower)
+            if(!randomized || upper <= lower)
                 return value;
             return value = lower + (upper - lower) * rng.nextDouble();
         }  
@@ -357,6 +429,10 @@ public class Parameters {
             this.cs = ConnectionStrategyEnum.CONSTANT;
         }
 
+        /**
+         * @param trustedNodes The number of Nodes in the trusted network, mining on the longest chain they are aware of.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setTrustedNodes(int trustedNodes) {
             if(trustedNodes <= 0)
                 throw new IllegalArgumentException("Non positive number of trusted Nodes");
@@ -364,13 +440,21 @@ public class Parameters {
             return this;
         }
 
+        /**
+         * @param attackerNodes The number of Nodes in the attacking network, mining on a secret branch containing a double-spending transaction.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setAttackerNodes(int attackerNodes) {
             if(attackerNodes <= 0)
-                throw new IllegalArgumentException("Non positive number of trusted Nodes");
+                throw new IllegalArgumentException("Non positive number of attacker Nodes");
             this.attackerNodes = attackerNodes;
             return this;
         }
 
+        /**
+         * @param difficulty The difficulty target of mining a single block.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setDifficulty(double difficulty) {
             if(difficulty <= 0 || difficulty >= 1)
                 throw new IllegalArgumentException("Difficulty not in (0, 1)");
@@ -378,6 +462,11 @@ public class Parameters {
             return this;
         }
 
+        /**
+         * Sets the Parameter to the specified value. The parameter is no longer randomized.
+         * @param confirmations The number of confirmations required by the target merchant to consider the payment as valid.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setConfirmations(int confirmations) {
             if(confirmations < 0)
                 throw new IllegalArgumentException("Negative confirmation length");
@@ -385,13 +474,22 @@ public class Parameters {
             return this;
         }
         
+        /**
+         * Randomizes this parameter by setting its lower and upper bounds (inclusive).
+         * @param lower The lower bound
+         * @param upper The upper bound
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder randomizeConfirmations(int lower, int upper) {
-            if(lower < 0 || lower > upper)
-                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.confirmations.randomize(lower, upper);
             return this;
         }
 
+        /**
+         * Sets the Parameter to the specified value. The parameter is no longer randomized.
+         * @param trustedLatency The mean latency in the trusted network.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setTrustedLatency(int trustedLatency) {
             if(trustedLatency < 0)
                 throw new IllegalArgumentException("Negative trusted latency");
@@ -399,13 +497,22 @@ public class Parameters {
             return this;
         }
         
+        /**
+         * Randomizes this parameter by setting its lower and upper bounds (inclusive).
+         * @param lower The lower bound
+         * @param upper The upper bound        
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder randomizeTrustedLatency(int lower, int upper) {
-            if(lower < 0 || lower > upper)
-                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.trustedLatency.randomize(lower, upper);
             return this;
         }
 
+        /**
+         * Sets the Parameter to the specified value. The parameter is no longer randomized.
+         * @param attackerLatency The mean latency in the attacking network.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setAttackerLatency(int attackerLatency) {
             if(attackerLatency < 0)
                 throw new IllegalArgumentException("Negative attacker latency");
@@ -413,13 +520,22 @@ public class Parameters {
             return this;
         }
         
+        /**
+         * Randomizes this parameter by setting its lower and upper bounds (inclusive).
+         * @param lower The lower bound
+         * @param upper The upper bound        
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder randomizeAttackerLatency(int lower, int upper) {
-            if(lower < 0 || lower > upper)
-                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.attackerLatency.randomize(lower, upper);
             return this;
         }
 
+        /**
+         * Sets the Parameter to the specified value. The parameter is no longer randomized.
+         * @param connectionLatency he mean latency between the trusted and the attacking network.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setConnectionLatency(int connectionLatency) {
             if(connectionLatency < 0)
                 throw new IllegalArgumentException("Negative connection latency");
@@ -427,13 +543,22 @@ public class Parameters {
             return this;
         }
         
+        /**
+         * Randomizes this parameter by setting its lower and upper bounds (inclusive).
+         * @param lower The lower bound
+         * @param upper The upper bound        
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder randomizeConnectionLatency(int lower, int upper) {
-            if(lower < 0 || lower > upper)
-                throw new IllegalArgumentException("Negative or invalid randomization bounds");
-            this.connectionLatency.randomize(lower, upper);
+           this.connectionLatency.randomize(lower, upper);
             return this;
         }
 
+        /**
+         * Sets the Parameter to the specified value. The parameter is no longer randomized.
+         * @param trustedGraphDensity The graph density of the trusted network.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setTrustedGraphDensity(double trustedGraphDensity) {
             if(trustedGraphDensity < 0)
                 throw new IllegalArgumentException("Negative trusted graph density");
@@ -441,13 +566,22 @@ public class Parameters {
             return this;
         }
         
+        /**
+         * Randomizes this parameter by setting its lower and upper bounds (inclusive).
+         * @param lower The lower bound
+         * @param upper The upper bound        
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder randomizeTrustedGraphDensity(double lower, double upper) {
-            if(lower < 0 || lower > upper)
-                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.trustedGraphDensity.randomize(lower, upper);
             return this;
         }
 
+        /**
+         * Sets the Parameter to the specified value. The parameter is no longer randomized.
+         * @param attackerGraphDensity The graph density of the attacking network.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setAttackerGraphDensity(double attackerGraphDensity) {
             if(attackerGraphDensity < 0)
                 throw new IllegalArgumentException("Negative attacker graph density");
@@ -455,13 +589,21 @@ public class Parameters {
             return this;
         }
         
+        /**
+         * Randomizes this parameter by setting its lower and upper bounds (inclusive).
+         * @param lower The lower bound
+         * @param upper The upper bound        
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder randomizeAttackerGraphDensity(double lower, double upper) {
-            if(lower < 0 || lower > upper)
-                throw new IllegalArgumentException("Negative or invalid randomization bounds");
             this.attackerGraphDensity.randomize(lower, upper);
             return this;
         }
         
+        /**
+         * @param runs The number of double-spend attempts during the simulation.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setRuns(int runs) {
             if(runs <= 0)
                 throw new IllegalArgumentException("Non positive number of runs");
@@ -469,6 +611,10 @@ public class Parameters {
             return this;
         }
 
+        /**
+         * @param epsilon The fault-tolerance defining the maximum trusted lead and blockchain length resulting in a failed double-spend attempt.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setEpsilon(double epsilon) {
             if(epsilon <= 0 || epsilon >= 1)
                 throw new IllegalArgumentException("Epsilon not in (0, 1)");
@@ -476,54 +622,100 @@ public class Parameters {
             return this;
         }
 
+        /**
+         * Sets the logging level defining the amount of console output.
+         * INFO < FINE < FINER < FINEST
+         * @param logLevel The logging level.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setLogLevel(Level logLevel) {
             this.logLevel = logLevel;
             return this;
         }
 
+        /**
+         * Sets the PeerStrategy used by the trusted network.
+         * @param tPeerStrat The PeerStrategy defined by its Enum value.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setTrustedPeerStrategy(PeerStrategyEnum tPeerStrat) {
             this.tps = tPeerStrat;
             return this;
         }
 
+        /**
+         * Sets the PeerStrategy used by the attacking network.
+         * @param aPeerStrat The PeerStrategy defined by its Enum value.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setAttackerPeerStrategy(PeerStrategyEnum aPeerStrat) {
             this.aps = aPeerStrat;
             return this;
         }
 
+        /**
+         * Sets the ConnectionStrategy used by the attacking network network to connect to the trusted network.
+         * @param connStrat The ConnectionStrategy defined by its Enum value.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setConnectionStrategy(ConnectionStrategyEnum connStrat) {
             this.cs = connStrat;
             return this;
         }
         
+        /**
+         * Sets the PeerStrategy used by the trusted network.
+         * @param tPeerStrat The concrete PeerStrategy instance to be used.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setTrustedPeerStrategy(PeerStrategy tPeerStrat) {
             this.tps = null;
             this.tPeerStrat = tPeerStrat;
             return this;
         }
 
+        /**
+         * Sets the PeerStrategy used by the attacking network.
+         * @param aPeerStrat The concrete PeerStrategy instance to be used.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setAttackerPeerStrategy(PeerStrategy aPeerStrat) {
             this.aps = null;
             this.aPeerStrat = aPeerStrat;
             return this;
         }
 
+        /**
+         * Sets the ConnectionStrategy used by the attacking network network to connect to the trusted network.
+         * @param connStrat The concrete ConnectionStrategy instance to be used.
+         * @return The ParametersBuilder instance.
+         */
         public ParametersBuilder setConnectionStrategy(ConnectionStrategy connStrat) {
             this.cs = null;
             this.connStrat = connStrat;
             return this;
         }
 
+        /**
+         * Instantiates Peer and Connection strategies as defined by the ParametersBuilder.
+         * @return the Parameters instance.
+         */
         public Parameters build() {
             if(tps != null)
-                tPeerStrat = buildTrustedPeerStrat();
+                tPeerStrat = buildPeerStrat(tps);
             if(aps != null)
-                aPeerStrat = buildAttackerPeerStrat();
+                aPeerStrat = buildPeerStrat(aps);
             if(cs != null)
                 connStrat = buildConnStrat();
             return new Parameters(this);
         }
         
+        /**
+         * Initializes this ParametersBuilder instance as specified by the property file.
+         * @param fileName The path and filename of the property file.
+         * @return The ParametersBuilder instance.
+         * @throws java.io.IOException If the specified property file can't be loaded.
+         */
         public ParametersBuilder loadFromProperty(String fileName) throws IOException {
             p.load(new FileInputStream(fileName));  
             return setTrustedNodes(getInteger("NUM_TRUSTED", trustedNodes)).
@@ -664,27 +856,14 @@ public class Parameters {
             }
         }
         
-        private PeerStrategy buildAttackerPeerStrat(){
-            switch(aps){
+        private PeerStrategy buildPeerStrat(PeerStrategyEnum ps){
+            switch(ps){
                 case CONSTANT:
                     return new ConstantPeerStrategy(attackerLatency);
                 case EUCLIDEAN:
                     return new EuclideanPeerStrategy(attackerLatency);
                 case RANDOM:
                     return new RndGraphPeerStrategy(attackerGraphDensity, attackerLatency);
-                default:
-                    return null;
-            }
-        }
-       
-        private PeerStrategy buildTrustedPeerStrat(){
-            switch(tps){
-                case CONSTANT:
-                    return new ConstantPeerStrategy(trustedLatency);
-                case EUCLIDEAN:
-                    return new EuclideanPeerStrategy(trustedLatency);
-                case RANDOM:
-                    return new RndGraphPeerStrategy(trustedGraphDensity, trustedLatency);
                 default:
                     return null;
             }

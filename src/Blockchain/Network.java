@@ -57,6 +57,9 @@ public class Network {
         this.nodes = nodes;
     }
     
+    /**
+     * @param maxLatency The maximum latency in milliseconds between any two nodes in the network.
+     */
     public void setMaxLatency(long maxLatency) {
         this.maxLatency = Math.max(maxLatency, 200);
     }

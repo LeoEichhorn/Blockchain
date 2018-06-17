@@ -42,7 +42,7 @@ public class SBSimulation {
     
     private void createPeers() {
         for(Node n : nodes)
-            n.resetPeers();
+            n.clearPeers();
         long maxLatency = peerStrategy.connectPeers(nodes);
         network.setMaxLatency(maxLatency);
     }

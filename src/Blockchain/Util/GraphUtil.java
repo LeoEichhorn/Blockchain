@@ -26,6 +26,14 @@ public class GraphUtil {
         }
     }
     
+    /**
+     * Creates a graph defined by an adjacency list as specified by the defined adjacency matrix.
+     * Edge weights are sampled from a gaussian distributian with constant mean.
+     * @param b The adjacency matrix.
+     * @param mean The mean of the edge weights.
+     * @param symmetric Wether the specified adjacency matrix should be treated as symmetric.
+     * @return The generated graph represented by an adjacency list.
+     */
     public static ArrayList<LinkedList<EdgeTo>> fromBoolMatrix(int[][] b, long mean, boolean symmetric) {
         Random rnd = new Random();
         int n = b.length;
@@ -55,6 +63,11 @@ public class GraphUtil {
         return fromAdjMatrix(m);
     }
     
+    /**
+     * Transforms a graph's matrix representation into an adjacency list.
+     * @param m The adjacency matrix.
+     * @return The adjacency list.
+     */
     public static ArrayList<LinkedList<EdgeTo>> fromAdjMatrix(long[][] m) {
         int n = m.length;
         ArrayList<LinkedList<EdgeTo>> adj = new ArrayList<>(n);
@@ -74,12 +87,23 @@ public class GraphUtil {
         return adj;
     }
     
+    /**
+     * Creates a pseudo-random, connected, symmetric graph with the given number of nodes and edges.
+     * Edge weights are sampled from a gaussian distributian with constant mean.
+     * @param n The number of nodes contained in the graph.
+     * @param edges The number of edges contained in the graph.
+     * @param mean The mean of the edge weights.
+     * @return The generated graph represented by an adjacency list.
+     */
     public static ArrayList<LinkedList<EdgeTo>> rndGraph(int n, int edges, long mean) {
         edges = Math.min((n*(n-1))/2, Math.max(edges, n-1));
         Random rnd = new Random();
         ArrayList<LinkedList<EdgeTo>> adj = new ArrayList<>(n);
         boolean[][] con = new boolean[n][n];
 
+        /**
+         * Generate the spanning tree.
+         */
         adj.add(new LinkedList<>());
         for(int i = 1; i < n; i++){
             adj.add(new LinkedList<>());
@@ -97,6 +121,9 @@ public class GraphUtil {
                 set.add(i);
         }
         
+        /**
+         * Distribute the remaining edges.
+         */
         while(edges-- > 0){
             int x = set.removeRandom(rnd);
             int y = getFreeNeighbor(x, rnd, con, set);
@@ -122,12 +149,19 @@ public class GraphUtil {
         return yn;
     }
     
+    /**
+     * Implementation of Dijkstra's shortest path algorithm.
+     * @param adj The graph represented by its adjcency list.
+     * @param start The starting node.
+     * @return A distance array containing the starting node's distance to each other node.
+     */
     public static long[] dijkstra(ArrayList<LinkedList<EdgeTo>> adj, int start){
         int n = adj.size();
         long[] d = new long[n];
         Arrays.fill(d, -1);
         d[start] = 0;
-        PriorityQueue<EdgeTo> pq = new PriorityQueue<>(n, (EdgeTo o1, EdgeTo o2) -> (int)(o1.weight - o2.weight));
+        PriorityQueue<EdgeTo> pq = new PriorityQueue<>(n, (EdgeTo o1, EdgeTo o2) 
+                -> (int)(o1.weight - o2.weight));
         pq.offer(new EdgeTo(start, 0));
         while(!pq.isEmpty()){
             EdgeTo v = pq.poll();
@@ -149,7 +183,7 @@ public class GraphUtil {
      * Solving All Pairs Shortest Paths for a graph represented by its adjacency list
      * by calling dijkstra for each node.
      * @param adj This graph's adjacency List
-     * @return The length of the shortest Paths
+     * @return A distance matrix containing the lengths of all shortest Paths
      */
     public static long[][] apsp(ArrayList<LinkedList<EdgeTo>> adj){
         int n = adj.size();

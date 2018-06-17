@@ -139,7 +139,10 @@ public abstract class Node {
         peers.add(p);
     }
     
-    public final void resetPeers() {
+    /**
+     * Deletes this Node's peer entries
+     */
+    public final void clearPeers() {
         peers.clear();
     }
     
@@ -148,7 +151,7 @@ public abstract class Node {
     }
     
     /**
-     * Decides if a recieved Blockchain should be ignored.
+     * Decides wether a recieved Blockchain should be ignored.
      * @param newChain The recieved Blockchain
      * @param sender The sending Node
      * @return If newChain should be ignored

@@ -60,10 +60,10 @@ public class DSSimulation {
                 
         DSManager dsm = new DSManager(p, this, network);
         for (int i = 0; i < p.getTrustedNodes(); i++) {
-            trustedNodes.add(new TrustedNode(dsm, network, p, "Trusted "+i));
+            trustedNodes.add(new TrustedNode(dsm, network, p, "T"+i));
         }
         for (int i = p.getTrustedNodes(); i < p.getNodes(); i++) {
-            attackerNodes.add(new AttackerNode(dsm, network, p, "Attacker "+(i-p.getTrustedNodes())));
+            attackerNodes.add(new AttackerNode(dsm, network, p, "A"+(i-p.getTrustedNodes())));
         }
         nodes.addAll(trustedNodes);
         nodes.addAll(attackerNodes);
@@ -99,7 +99,7 @@ public class DSSimulation {
     }
     
     /**
-     * Called after (un-)successful Double Spend attempt. Stops the network so
+     * Called after each (un-)successful Double Spend attempt. Stops the network so
      * a new run of the Simulation can be started.
      * @param successful Wether the Double Spend attempt was successful
      * @param attackerChain The final length of the attacker fork of the Blockchain

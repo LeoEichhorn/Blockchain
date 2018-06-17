@@ -5,7 +5,7 @@ import Blockchain.Network;
 import Blockchain.Node;
 
 /**
- * Implementation of a rogue Node trying to create Double Spends in the Network.
+ * Implementation of a rogue Node trying to create Double-Spends in the Network.
  */
 public class AttackerNode extends Node{
     private DSManager dsm;
@@ -22,7 +22,7 @@ public class AttackerNode extends Node{
     
     @Override
     protected boolean ignoreBlockchain(Blockchain newChain, Node sender) {
-        //Only infested Blockchains (containing the altered transaction) are accepted
+        //Only double-spending Blockchains (containing the double-spending transaction) are accepted
         return !((DSBlockchain) newChain).isDoubleSpending();
     }
 

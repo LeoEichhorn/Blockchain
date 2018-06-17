@@ -24,7 +24,7 @@ public class RndGraphPeerStrategy extends GraphPeerStrategy{
     @Override
     public long connectPeers(ArrayList<Node> nodes) {
         for(Node n : nodes)
-            n.resetPeers();
+            n.clearPeers();
         int nodeNum = nodes.size();
         int edges = (int) (density.next()*nodeNum*(nodeNum-1))/2;
         ArrayList<LinkedList<GraphUtil.EdgeTo>> adj = GraphUtil.rndGraph(nodeNum, edges, mean.next());

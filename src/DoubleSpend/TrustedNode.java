@@ -18,7 +18,7 @@ public class TrustedNode extends Node{
     
     @Override
     protected void onBlockMined(){
-        //Check wether the new block was mined on an infested chain
+        //Check wether the new block was mined on a double-spending chain
         if(((DSBlockchain) blockchain).isDoubleSpending()) {
             dsm.registerAttackerChain(blockchain.getLength());
         } else {
@@ -28,20 +28,20 @@ public class TrustedNode extends Node{
     
     @Override
     protected boolean ignoreBlockchain(Blockchain newChain, Node sender) {
-        //Infested blockchains are ignored until the legitimate blockchain has been confirmed
+        //Double-spending blockchains are ignored until the legitimate blockchain has been confirmed
         return ((DSBlockchain) newChain).isDoubleSpending() 
             && ((DSBlockchain) blockchain).getLength() < p.getConfirmations();
     }
 
     @Override
     protected void onChoice(Blockchain oldChain, Blockchain newChain) {
-        boolean infestedBefore = ((DSBlockchain) oldChain).isDoubleSpending();
-        boolean infestedAfter = ((DSBlockchain) newChain).isDoubleSpending();
-        if(infestedBefore && !infestedAfter){
-            Logger.log(Level.FINEST, String.format("%s: No longer infested!",name));
+        boolean doubleSpendingBefore = ((DSBlockchain) oldChain).isDoubleSpending();
+        boolean doubleSpendingAfter = ((DSBlockchain) newChain).isDoubleSpending();
+        if(doubleSpendingBefore && !doubleSpendingAfter){
+            Logger.log(Level.FINEST, String.format("%s: No longer convinced of double-spending transaction.",name));
             dsm.removeConvinced();
-        }else if(!infestedBefore && infestedAfter){
-            Logger.log(Level.FINEST, String.format("%s: Is now infested!",name));
+        }else if(!doubleSpendingBefore && doubleSpendingAfter){
+            Logger.log(Level.FINEST, String.format("%s: Is now convinced of double-spending transaction.",name));
             dsm.addConvinced();
         }
     }

@@ -24,7 +24,7 @@ public class ConstantPeerStrategy extends PeerStrategy{
     @Override
     public long connectPeers(ArrayList<Node> nodes) {
         for(Node n : nodes)
-            n.resetPeers();
+            n.clearPeers();
         Random rnd = new Random();
         mean.next();
         long max = 0;
