@@ -430,7 +430,7 @@ public class Parameters {
         }
 
         /**
-         * @param trustedNodes The number of Nodes in the trusted network, mining on the longest chain they are aware of.
+         * @param trustedNodes The number of Nodes in the trusted network, mining on the longest chain they are aware of. Default value: 32
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setTrustedNodes(int trustedNodes) {
@@ -441,7 +441,7 @@ public class Parameters {
         }
 
         /**
-         * @param attackerNodes The number of Nodes in the attacking network, mining on a secret branch containing a double-spending transaction.
+         * @param attackerNodes The number of Nodes in the attacking network, mining on a secret branch containing a double-spending transaction. Default value: 16
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setAttackerNodes(int attackerNodes) {
@@ -452,7 +452,7 @@ public class Parameters {
         }
 
         /**
-         * @param difficulty The difficulty target of mining a single block.
+         * @param difficulty The difficulty target of mining a single block. Default value: 0.00001
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setDifficulty(double difficulty) {
@@ -463,8 +463,8 @@ public class Parameters {
         }
 
         /**
-         * Sets the Parameter to the specified value. The parameter is no longer randomized.
-         * @param confirmations The number of confirmations required by the target merchant to consider the payment as valid.
+         * Sets the Parameter to the specified value. The parameter is no longer randomized. 
+         * @param confirmations The number of confirmations required by the target merchant to consider the payment as valid. Default value: 6
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setConfirmations(int confirmations) {
@@ -487,7 +487,7 @@ public class Parameters {
 
         /**
          * Sets the Parameter to the specified value. The parameter is no longer randomized.
-         * @param trustedLatency The mean latency in the trusted network.
+         * @param trustedLatency The mean latency in the trusted network. Default value: 10
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setTrustedLatency(int trustedLatency) {
@@ -510,7 +510,7 @@ public class Parameters {
 
         /**
          * Sets the Parameter to the specified value. The parameter is no longer randomized.
-         * @param attackerLatency The mean latency in the attacking network.
+         * @param attackerLatency The mean latency in the attacking network. Default value: 10
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setAttackerLatency(int attackerLatency) {
@@ -533,7 +533,7 @@ public class Parameters {
 
         /**
          * Sets the Parameter to the specified value. The parameter is no longer randomized.
-         * @param connectionLatency he mean latency between the trusted and the attacking network.
+         * @param connectionLatency he mean latency between the trusted and the attacking network. Default value: 10
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setConnectionLatency(int connectionLatency) {
@@ -556,7 +556,7 @@ public class Parameters {
 
         /**
          * Sets the Parameter to the specified value. The parameter is no longer randomized.
-         * @param trustedGraphDensity The graph density of the trusted network.
+         * @param trustedGraphDensity The graph density of the trusted network. Default value: 0.8
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setTrustedGraphDensity(double trustedGraphDensity) {
@@ -579,7 +579,7 @@ public class Parameters {
 
         /**
          * Sets the Parameter to the specified value. The parameter is no longer randomized.
-         * @param attackerGraphDensity The graph density of the attacking network.
+         * @param attackerGraphDensity The graph density of the attacking network. Default value: 0.8
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setAttackerGraphDensity(double attackerGraphDensity) {
@@ -601,7 +601,7 @@ public class Parameters {
         }
         
         /**
-         * @param runs The number of double-spend attempts during the simulation.
+         * @param runs The number of double-spend attempts during the simulation. Default value: 100
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setRuns(int runs) {
@@ -612,7 +612,7 @@ public class Parameters {
         }
 
         /**
-         * @param epsilon The fault-tolerance defining the maximum trusted lead and blockchain length resulting in a failed double-spend attempt.
+         * @param epsilon The fault-tolerance defining the maximum trusted lead and blockchain length resulting in a failed double-spend attempt. Default value: 0.00001
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setEpsilon(double epsilon) {
@@ -625,7 +625,7 @@ public class Parameters {
         /**
          * Sets the logging level defining the amount of console output.
          * INFO < FINE < FINER < FINEST
-         * @param logLevel The logging level.
+         * @param logLevel The logging level. Default value: FINE
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setLogLevel(Level logLevel) {
@@ -635,7 +635,7 @@ public class Parameters {
 
         /**
          * Sets the PeerStrategy used by the trusted network.
-         * @param tPeerStrat The PeerStrategy defined by its Enum value.
+         * @param tPeerStrat The PeerStrategy defined by its Enum value. Default value: RANDOM
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setTrustedPeerStrategy(PeerStrategyEnum tPeerStrat) {
@@ -645,7 +645,7 @@ public class Parameters {
 
         /**
          * Sets the PeerStrategy used by the attacking network.
-         * @param aPeerStrat The PeerStrategy defined by its Enum value.
+         * @param aPeerStrat The PeerStrategy defined by its Enum value. Default value: RANDOM
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setAttackerPeerStrategy(PeerStrategyEnum aPeerStrat) {
@@ -655,7 +655,7 @@ public class Parameters {
 
         /**
          * Sets the ConnectionStrategy used by the attacking network network to connect to the trusted network.
-         * @param connStrat The ConnectionStrategy defined by its Enum value.
+         * @param connStrat The ConnectionStrategy defined by its Enum value. Default value: CONSTANT
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setConnectionStrategy(ConnectionStrategyEnum connStrat) {
@@ -665,7 +665,7 @@ public class Parameters {
         
         /**
          * Sets the PeerStrategy used by the trusted network.
-         * @param tPeerStrat The concrete PeerStrategy instance to be used.
+         * @param tPeerStrat The concrete PeerStrategy instance to be used. Default value: RANDOM
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setTrustedPeerStrategy(PeerStrategy tPeerStrat) {
@@ -676,7 +676,7 @@ public class Parameters {
 
         /**
          * Sets the PeerStrategy used by the attacking network.
-         * @param aPeerStrat The concrete PeerStrategy instance to be used.
+         * @param aPeerStrat The concrete PeerStrategy instance to be used. Default value: RANDOM
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setAttackerPeerStrategy(PeerStrategy aPeerStrat) {
@@ -687,7 +687,7 @@ public class Parameters {
 
         /**
          * Sets the ConnectionStrategy used by the attacking network network to connect to the trusted network.
-         * @param connStrat The concrete ConnectionStrategy instance to be used.
+         * @param connStrat The concrete ConnectionStrategy instance to be used. Default value: CONSTANT
          * @return The ParametersBuilder instance.
          */
         public ParametersBuilder setConnectionStrategy(ConnectionStrategy connStrat) {
@@ -736,8 +736,8 @@ public class Parameters {
                     setRuns(getInteger("RUNS", runs)).
                     setEpsilon(getDouble("EPSILON", epsilon)).
                     setLogLevel(getLevel("LOGGING", logLevel)).
-                    setTrustedPeerStrategy(getPeerStrat("T_PEER_STRAT", tps)). 
-                    setAttackerPeerStrategy(getPeerStrat("A_PEER_STRAT", aps)).
+                    setTrustedPeerStrategy(getPeerStrat("PS_TRUSTED", tps)). 
+                    setAttackerPeerStrategy(getPeerStrat("PS_ATTACKER", aps)).
                     setConnectionStrategy(getConnStrat("CONN_STRAT", cs));
         }
         
